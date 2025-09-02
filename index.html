@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="icon-page.png" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SIGACC - Sistema Integrado de Gestão de Atividades Complementares</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="scripts.js" defer></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="bg-decoration">
+        <div class="circle circle-1"></div>
+        <div class="circle circle-2"></div>
+        <div class="circle circle-3"></div>
+    </div>
+
+    <div id="app-container">
+        <!-- Tela de Login -->
+        <div class="login-container" id="loginScreen">
+            <div class="login-header">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h2 id="loginTitle">Login SIGACC</h2>
+                <p>Acesse o sistema de atividades complementares</p>
+            </div>
+
+            <div id="errorMessage" class="message error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>Usuário ou senha inválidos!</span>
+            </div>
+
+            <div id="successMessage" class="message success-message">
+                <i class="fas fa-check-circle"></i>
+                <span>Registro realizado com sucesso!</span>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Usuário</label>
+                    <i class="fas fa-user input-icon"></i>
+                    <input type="text" id="username" placeholder="Digite seu usuário" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" id="password" placeholder="Digite sua senha" required>
+                    <i class="fas fa-eye password-toggle" id="togglePassword"></i>
+                </div>
+
+                <button type="submit" class="login-btn" id="submitBtn">Entrar</button>
+            </form>
+
+            <div class="login-links">
+                <a href="#" class="link-item" id="aboutLink">
+                    <i class="fas fa-info-circle"></i> Sobre o sistema
+                </a>
+                <a href="https://www.engproducao.uema.br/wp-content/uploads/2021/09/RESOLU%C3%87%C3%83O-DE-ATIVIDADES-COMPLEMENTARES-2021.pdf"
+                    class="link-item" target="_blank">
+                    <i class="fas fa-file-pdf"></i> Resolução de Atividades Complementares
+                </a>
+            </div>
+
+            <div class="login-footer">
+                <p>SIGACC - Desenvolvido por Diego Bezerra Reinaldo © 2025</p>
+            </div>
+        </div>
+
+        <!-- Tela Principal (será mostrada após login) -->
+        <div class="user-screen" id="mainScreen">
+            <!-- Cabeçalho Admin -->
+            <div class="main-header admin-header admin-only">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div class="user-details">
+                        <h2 id="adminUserName">Administrador</h2>
+                        <p id="adminUserRole">Administrador do Sistema</p>
+                    </div>
+                </div>
+
+                <div class="header-buttons">
+                    <button class="header-btn logout" id="adminLogoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Sair
+                    </button>
+                </div>
+            </div>
+
+            <!-- Cabeçalho Coordenador -->
+            <div class="main-header coordinator-header coordinator-only">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div class="user-details">
+                        <h2 id="coordinatorUserName">Coordenador</h2>
+                        <p id="coordinatorUserRole">Coordenador de Turma</p>
+                    </div>
+                </div>
+
+                <div class="header-buttons">
+                    <button class="header-btn logout" id="coordinatorLogoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Sair
+                    </button>
+                </div>
+            </div>
+
+            <!-- Cabeçalho Estudante -->
+            <div class="main-header student-header student-only">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div class="user-details">
+                        <h2 id="studentUserName">Estudante</h2>
+                        <p id="studentUserCourse">Engenharia de Produção Bacharelado UEMA</p>
+                    </div>
+                </div>
+
+                <div class="header-buttons">
+                    <button class="header-btn" type="button" id="studentExportBtn">
+                        <i class="fas fa-file-export"></i> Exportar
+                    </button>
+                    <button class="header-btn" type="button" id="studentImportBtn">
+                        <i class="fas fa-file-import"></i> Importar
+                    </button>
+                    <button class="header-btn logout" id="studentLogoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Sair
+                    </button>
+                </div>
+            </div>
+
+            <!-- Abas e Conteúdos -->
+            <div class="tabs-container">
+                <div class="tabs">
+                    <!-- Abas do Admin -->
+                    <div class="tab admin-tab admin-only" data-tab="gerenciar-coordenadores"
+                        style="display: flex; justify-content: center">
+                        <i class="fas fa-users"></i> Gerenciar Coordenadores
+                    </div>
+
+                    <!-- Abas do Coordenador -->
+                    <div class="tab coordinator-tab coordinator-only" data-tab="gerenciar-estudantes"
+                        style="display: flex; justify-content: center">
+                        <i class="fas fa-user-graduate"></i> Gerenciar Estudantes
+                    </div>
+                    <div class="tab coordinator-tab coordinator-only" data-tab="visualizar-turma"
+                        style="display: flex; justify-content: center">
+                        <i class="fas fa-users"></i> Visualizar Turma
+                    </div>
+                    <div class="tab coordinator-tab coordinator-only" data-tab="atividades-estudante"
+                        style="display: flex; justify-content: center">
+                        <i class="fas fa-tasks"></i> Atividades do Estudante
+                    </div>
+                    <div class="tab coordinator-tab coordinator-only" data-tab="estatisticas-estudante"
+                        style="display: flex; justify-content: center">
+                        <i class="fas fa-chart-pie"></i> Estatísticas do Estudante
+                    </div>
+
+                    <!-- Abas do Estudante -->
+                    <div class="tab student-tab student-only" data-tab="cadastrar"
+                        style="display: flex; justify-content: center">Cadastrar Atividade</div>
+                    <div class="tab student-tab student-only" data-tab="exibir"
+                        style="display: flex; justify-content: center">Minhas Atividades</div>
+                    <div class="tab student-tab student-only" data-tab="editar"
+                        style="display: flex; justify-content: center">Editar Atividade</div>
+                    <div class="tab student-tab student-only" data-tab="resumo"
+                        style="display: flex; justify-content: center">Resumo</div>
+                </div>
+            </div>
+
+            <div class="tab-content-container">
+                <!-- Conteúdo do Admin -->
+                <div class="tab-content admin-only" id="gerenciar-coordenadores">
+                    <div class="form-container">
+                        <h3 class="form-title"><i class="fas fa-user-plus"></i> Cadastrar Novo Coordenador</h3>
+                        <form id="formCadastroCoordenador">
+                            <div class="form-grid">
+                                <div class="form-group-main">
+                                    <label for="coordNome">Nome Completo</label>
+                                    <input type="text" id="coordNome" placeholder="Nome do coordenador" required>
+                                </div>
+                                <div class="form-group-main">
+                                    <label for="coordMatricula">Matrícula do Coordenador</label>
+                                    <input type="text" id="coordMatricula"
+                                        placeholder="Digite a matrícula (apenas números)" pattern="\d{11}"
+                                        maxlength="11" title="Matrícula deve conter exatamente 11 dígitos" required>
+                                </div>
+                                <div class="form-group-main">
+                                    <label for="coordUsuario">Usuário</label>
+                                    <input type="text" id="coordUsuario" placeholder="Nome de usuário" required>
+                                </div>
+                                <div class="form-group-main">
+                                    <label for="coordSenha">Senha</label>
+                                    <input type="password" id="coordSenha" placeholder="Senha" required>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="form-btn primary">
+                                    <i class="fas fa-save"></i> Cadastrar Coordenador
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="form-container">
+                        <h3 class="form-title"><i class="fas fa-list"></i> Coordenadores Cadastrados</h3>
+                        <div class="user-management" id="coordenadoresList">
+                            <!-- Lista de coordenadores será preenchida aqui -->
+                        </div>
+                    </div>
+
+                    <!-- Modal de Edição de Coordenador -->
+                    <div id="modalEdicaoCoordenador" class="modal">
+                        <div class="modal-content">
+                            <button onclick="limparEdicaoCoordenador()"><span class="close">&times;</span></button>
+                            <h3><i class="fas fa-edit"></i> Editar Coordenador</h3>
+                            <form id="formEdicaoCoordenador">
+                                <input type="hidden" id="coordIdEdicao">
+                                <div class="form-grid">
+                                    <div class="form-group-main">
+                                        <label for="coordNomeEdicao">Nome Completo</label>
+                                        <input type="text" id="coordNomeEdicao" placeholder="Nome do coordenador"
+                                            required>
+                                    </div>
+                                    <div class="form-group-main">
+                                        <label for="coordMatriculaEdicao">Matrícula do Coordenador (Edição)</label>
+                                        <input type="text" id="coordMatriculaEdicao"
+                                            placeholder="Digite a matrícula (apenas números)" pattern="\d{11}"
+                                            maxlength="11" title="Matrícula deve conter exatamente 11 dígitos" required>
+                                    </div>
+                                    <div class="form-group-main">
+                                        <label for="coordUsuarioEdicao">Usuário</label>
+                                        <input type="text" id="coordUsuarioEdicao" placeholder="Nome de usuário"
+                                            required>
+                                    </div>
+                                    <div class="form-group-main">
+                                        <label for="coordSenhaEdicao">Senha</label>
+                                        <input type="password" id="coordSenhaEdicao" placeholder="Senha" required>
+                                    </div>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="form-btn primary">
+                                        <i class="fas fa-save"></i> Salvar Alterações
+                                    </button>
+                                    <button type="button" class="form-btn secondary"
+                                        onclick="limparEdicaoCoordenador()">
+                                        <i class="fas fa-times"></i> Cancelar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conteúdo do Coordenador - Gerenciar Estudantes -->
+                <div class="tab-content coordinator-only" id="gerenciar-estudantes">
+                    <div class="form-container">
+                        <h3 class="form-title"><i class="fas fa-user-plus"></i> Cadastrar Novo Estudante</h3>
+                        <form id="formCadastroEstudante">
+                            <div class="form-grid">
+                                <div class="form-group-main">
+                                    <label for="estudanteNome">Nome Completo</label>
+                                    <input type="text" id="estudanteNome" placeholder="Nome do estudante" required>
+                                </div>
+                                <div class="form-group-main">
+                                    <label for="estudanteMatricula">Matrícula do Estudante</label>
+                                    <input type="text" id="estudanteMatricula"
+                                        placeholder="Digite a matrícula (apenas números)" pattern="\d{11}"
+                                        maxlength="11" title="Matrícula deve conter exatamente 11 dígitos" required>
+                                </div>
+                                <div class="form-group-main">
+                                    <label for="estudanteUsuario">Usuário</label>
+                                    <input type="text" id="estudanteUsuario" placeholder="Nome de usuário" required>
+                                </div>
+                                <div class="form-group-main">
+                                    <label for="estudanteSenha">Senha</label>
+                                    <input type="password" id="estudanteSenha" placeholder="Senha" required>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="form-btn primary">
+                                    <i class="fas fa-save"></i> Cadastrar Estudante
+                                </button>
+                                <button type="button" class="form-btn primary" id="importarEstudanteBtn">
+                                    <i class="fas fa-file-import"></i> Importar do ZIP
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="form-container">
+                        <h3 class="form-title"><i class="fas fa-list"></i> Estudantes Cadastrados</h3>
+                        <div class="user-management" id="estudantesList">
+                            <!-- Lista de estudantes será preenchida aqui -->
+                        </div>
+                    </div>
+
+                    <!-- Modal de Edição de Estudante -->
+                    <div id="modalEdicaoEstudante" class="modal">
+                        <div class="modal-content">
+                            <button onclick="limparEdicaoEstudante()"><span class="close">&times;</span></button>
+                            <h3><i class="fas fa-edit"></i>Editar Estudante</h3>
+                            <form id="formEdicaoEstudante">
+                                <input type="hidden" id="estudanteIdEdicao">
+                                <div class="form-grid">
+                                    <div class="form-group-main">
+                                        <label for="estudanteNomeEdicao">Nome Completo</label>
+                                        <input type="text" id="estudanteNomeEdicao" placeholder="Nome do estudante"
+                                            required>
+                                    </div>
+                                    <div class="form-group-main">
+                                        <label for="estudanteMatriculaEdicao">Matrícula do Estudante</label>
+                                        <input type="text" id="estudanteMatriculaEdicao"
+                                            placeholder="Digite a matrícula (apenas números)" pattern="\d{11}"
+                                            maxlength="11" title="Matrícula deve conter exatamente 11 dígitos" required>
+                                    </div>
+                                    <div class="form-group-main">
+                                        <label for="estudanteUsuarioEdicao">Usuário</label>
+                                        <input type="text" id="estudanteUsuarioEdicao" placeholder="Nome de usuário"
+                                            required>
+                                    </div>
+                                    <div class="form-group-main">
+                                        <label for="estudanteSenhaEdicao">Senha</label>
+                                        <input type="password" id="estudanteSenhaEdicao" placeholder="Senha" required>
+                                    </div>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="form-btn primary">
+                                        <i class="fas fa-save"></i> Salvar Alterações
+                                    </button>
+                                    <button type="button" class="form-btn secondary" onclick="limparEdicaoEstudante()">
+                                        <i class="fas fa-times"></i> Cancelar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conteúdo do Coordenador - Visualizar Turma -->
+                <div class="tab-content coordinator-only" id="visualizar-turma">
+                    <div class="form-container">
+                        <h3 class="form-title"><i class="fas fa-chart-bar"></i> Progresso da Turma</h3>
+
+                        <!-- Adicionando KPIs de progresso da turma -->
+                        <div class="hours-summary">
+                            <div class="summary-item">
+                                <div class="summary-value" id="totalEstudantesTurma">0</div>
+                                <div class="summary-label">Total de Estudantes</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-value" id="estudantesComHoras">0</div>
+                                <div class="summary-label">Estudantes com Horas</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-value" id="updatecoordinatorKPI">0%</div>
+                                <div class="summary-label">Progresso Médio</div>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="activities-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Matrícula</th>
+                                        <th>Horas Registradas</th>
+                                        <th>Horas Validadas</th>
+                                        <th>Progresso</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabelaTurma">
+                                    <!-- Conteúdo será preenchido por JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conteúdo do Coordenador - Atividades do Estudante -->
+                <div class="tab-content coordinator-only" id="atividades-estudante">
+                    <!-- Resumo do Estudante -->
+                    <div class="form-container">
+                        <h3 class="form-title">
+                            <i class="fas fa-user-graduate"></i> Atividades do Estudante: <span
+                                id="nomeEstudanteSelecionado">Nenhum selecionado</span>
+                            <button class="form-btn secondary" onclick="voltarParaTurma()">
+                                <i class="fas fa-arrow-left"></i> Voltar para Turma
+                            </button>
+                        </h3>
+
+                        <!-- Filtros -->
+                        <h4>Filtros</h4>
+                        <div class="form-grid">
+                            <div class="form-group-main">
+                                <!--<label for="filtroStatus">Status</label>-->
+                                <select id="filtroStatus">
+                                    <option value="Todos">Todos</option>
+                                    <option value="Pendente">Pendente</option>
+                                    <option value="Aprovado">Aprovado</option>
+                                    <option value="Rejeitado">Rejeitado</option>
+                                </select>
+                            </div>
+                            <div class="form-group-main">
+                                <button class="form-btn primary" onclick="aplicarFiltrosAtividades()">
+                                    <i class="fas fa-filter"></i> Aplicar Filtros
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="activities-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Tipo</th>
+                                        <th>Horas Registradas</th>
+                                        <th>Horas Validadas</th>
+                                        <th>Período</th>
+                                        <th>Status</th>
+                                        <th>Comprovante</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabelaAtividadesEstudante">
+                                    <!-- Conteúdo será preenchido por JavaScript -->
+                                    <tr>
+                                        <td colspan="8" style="text-align: center;">Selecione um Estudante</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conteúdo do Coordenador - Estatísticas do Estudante -->
+                <div class="tab-content coordinator-only" id="estatisticas-estudante">
+                    <!-- Estatísticas do Estudante -->
+                    <div class="form-container">
+                        <h3 class="form-title"><i class="fas fa-chart-pie"></i> Estatísticas do Estudante:
+                            <span id="nomeEstudanteSelecionado">Nenhum selecionado</span>
+                            <button class="form-btn secondary" onclick="voltarParaTurma()">
+                                <i class="fas fa-arrow-left"></i> Voltar para Turma
+                            </button>
+                        </h3>
+                        <div class="form-container">
+                            <div class="chart-container" style="height: 300px; position: relative;">
+                                <canvas id="hoursChartCoordinator"></canvas>
+                            </div>
+                        </div>
+                        <div class="hours-summary">
+                            <div class="summary-item">
+                                <div class="summary-value" id="resumoHorasRegistradasEstudante">0</div>
+                                <div class="summary-label">Horas Registradas</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-value" id="resumoHorasValidadasEstudante">0</div>
+                                <div class="summary-label">Horas Validadas</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-value">225</div>
+                                <div class="summary-label">Horas Necessárias</div>
+                            </div>
+                        </div>
+
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span>Progresso total</span>
+                                <span id="progressoTotalEstudante">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressoTotalFillEstudante"
+                                    style="width: 0%; height: 100%; background: linear-gradient(to right, var(--orange), var(--dark-orange));">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span>Horas validadas</span>
+                                <span id="horasValidadasEstudante">0/225</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="horasValidadasFillEstudante"
+                                    style="width: 0%; height: 100%; background: linear-gradient(to right, var(--orange), var(--dark-orange));">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conteúdo do Estudante - Cadastrar Atividade -->
+                <div class="tab-content student-only" id="cadastrar">
+                    <div class="form-container">
+                        <h3 class="form-title"><i class="fas fa-plus-circle"></i> Nova Atividade Complementar</h3>
+                        <form id="formCadastro">
+                            <div class="form-grid">
+                                <div class="form-group-main">
+                                    <label for="nome">Nome da Atividade</label>
+                                    <input type="text" id="nome" placeholder="Ex: Participação em congresso" required>
+                                </div>
+
+                                <div class="form-group-main">
+                                    <label for="tipo">Tipo de Atividade</label>
+                                    <select id="tipo" required>
+                                        <option value="">Selecione um tipo</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group-main">
+                                    <label for="horas">Horas Registradas</label>
+                                    <input type="number" id="horas" placeholder="Ex: 100" min="0" step="0.1" required>
+                                    <i class="fas fa-info-circle info-icon"></i>
+                                    <div class="info-tooltip">
+                                        Quantidade total de horas que você dedicou a esta atividade
+                                    </div>
+                                </div>
+
+                                <div class="form-group-main">
+                                    <label for="periodo">Período</label>
+                                    <input type="text" id="periodo" placeholder="Ex: 2023.1" required>
+                                </div>
+
+                                <div class="form-group-main">
+                                    <label for="comprovante">Comprovante (PDF)</label>
+                                    <input type="file" id="comprovante" accept=".pdf">
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="form-btn primary">
+                                    <i class="fas fa-save"></i> Salvar Atividade
+                                </button>
+                                <button type="button" class="form-btn secondary" id="limparCadastroBtn">
+                                    <i class="fas fa-times"></i> Limpar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="system-message info">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Preencha todos os campos para cadastrar uma nova atividade complementar.</span>
+                    </div>
+                </div>
+
+                <!-- Conteúdo do Estudante - Minhas Atividades -->
+                <div class="tab-content student-only" id="exibir">
+                    <div class="form-container">
+                        <h3 class="form-title"><i class="fas fa-filter"></i> Filtros</h3>
+                        <form id="formFiltro">
+                            <div class="form-grid">
+                                <div class="form-group-main">
+                                    <label for="filtroGrupo">Grupo de Atividade</label>
+                                    <select id="filtroGrupo">
+                                        <option value="Todos">Todos os grupos</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group-main">
+                                    <label for="filtroTipo">Tipo de Atividade</label>
+                                    <select id="filtroTipo">
+                                        <option value="Todos">Todos os tipos</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group-main">
+                                    <label for="filtroPeriodo">Período</label>
+                                    <input type="text" id="filtroPeriodo" placeholder="Ex: 2023.1">
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="form-btn primary">
+                                    <i class="fas fa-search"></i> Aplicar Filtros
+                                </button>
+                                <button type="button" class="form-btn secondary" id="limparFiltrosBtn">
+                                    <i class="fas fa-redo"></i> Limpar Filtros
+                                </button>
+                                <button type="button" class="form-btn primary" id="imprimirBtn">
+                                    <i class="fas fa-print"></i> Imprimir
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="activities-table">
+                            <thead>
+                                <tr>
+                                    <th style="text-align: center; vertical-align: middle">Nome</th>
+                                    <th style="text-align: center; vertical-align: middle">Tipo</th>
+                                    <th style="text-align: center; vertical-align: middle">Horas Registradas</th>
+                                    <th style="text-align: center; vertical-align: middle">Horas Validadas</th>
+                                    <th style="text-align: center; vertical-align: middle">Período</th>
+                                    <th style="text-align: center; vertical-align: middle">Status</th>
+                                    <th style="text-align: center; vertical-align: middle">Comprovante</th>
+                                    <th style="text-align: center; vertical-align: middle">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaAtividades">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="hours-summary">
+                        <div class="summary-item">
+                            <div class="summary-value" id="totalHorasRegistradas">0</div>
+                            <div class="summary-label">Horas Registradas</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-value" id="totalHorasValidadas">0</div>
+                            <div class="summary-label">Horas Validadas</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-value">225</div>
+                            <div class="summary-label">Horas Necessárias</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conteúdo do Estudante - Editar Atividade -->
+                <div class="tab-content student-only" id="editar">
+                    <div class="form-container">
+                        <h3 class="form-title"><i class="fas fa-edit"></i> Editar Atividade</h3>
+                        <form id="formEdicao">
+                            <input type="hidden" id="idEdicao">
+                            <div class="form-grid">
+                                <div class="form-group-main">
+                                    <label for="nomeEdicao">Nome da Atividade</label>
+                                    <input type="text" id="nomeEdicao" required>
+                                </div>
+
+                                <div class="form-group-main">
+                                    <label for="tipoEdicao">Tipo de Atividade</label>
+                                    <select id="tipoEdicao" required>
+                                    </select>
+                                </div>
+
+                                <div class="form-group-main">
+                                    <label for="horasEdicao">Horas Registradas</label>
+                                    <input type="number" id="horasEdicao" min="0" step="0.1" required>
+                                </div>
+
+                                <div class="form-group-main">
+                                    <label for="periodoEdicao">Período</label>
+                                    <input type="text" id="periodoEdicao" required>
+                                </div>
+
+                                <div class="form-group-main">
+                                    <label for="comprovanteEdicao">Comprovante (PDF)</label>
+                                    <input type="file" id="comprovanteEdicao" accept=".pdf">
+                                    <div id="comprovanteAtualInfo" class="file-info"></div>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="form-btn primary">
+                                    <i class="fas fa-save"></i> Salvar Alterações
+                                </button>
+                                <button type="button" class="form-btn secondary" id="cancelarEdicaoBtn">
+                                    <i class="fas fa-times"></i> Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="system-message info">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Selecione uma atividade na aba "Minhas Atividades" para editar.</span>
+                    </div>
+                </div>
+
+                <!-- Conteúdo do Estudante - Resumo -->
+                <div class="tab-content student-only" id="resumo">
+                    <div class="form-container">
+                        <h3 class="form-title"><i class="fas fa-chart-pie"></i> Resumo de Horas</h3>
+                        <div class="chart-container" style="height: 300px; position: relative;">
+                            <canvas id="hoursChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="form-container">
+                        <h3 class="form-title"><i class="fas fa-tasks"></i> Progresso</h3>
+                        <div class="hours-summary">
+                            <div class="summary-item">
+                                <div class="summary-value" id="resumoHorasRegistradas">0</div>
+                                <div class="summary-label">Horas Registradas</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-value" id="resumoHorasValidadas">0</div>
+                                <div class="summary-label">Horas Validadas</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-value">225</div>
+                                <div class="summary-label">Horas Necessárias</div>
+                            </div>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span>Progresso total</span>
+                                <span id="progressoTotalPercent">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressoTotalFill"
+                                    style="width: 0%; height: 100%; background: linear-gradient(to right, var(--orange), var(--dark-orange));">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span>Horas validadas</span>
+                                <span id="horasValidadasPercent">0/225</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="horasValidadasFill"
+                                    style="width: 0%; height: 100%; background: linear-gradient(to right, #28a745, #218838);">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const matriculaIds = [
+                'estudanteMatriculaEdicao',
+                'estudanteMatricula',
+                'coordMatriculaEdicao',
+                'coordMatricula'
+            ];
+
+            matriculaIds.forEach(id => {
+                const input = document.getElementById(id);
+                if (!input) return; // Se o campo não existir, ignora
+
+                // Impedir a digitação de caracteres não numéricos
+                input.addEventListener('keydown', function (e) {
+                    // Permitir teclas de controle
+                    if (['Backspace', 'Tab', 'Delete', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                        return;
+                    }
+
+                    // Impedir a entrada se não for um número
+                    if (e.key < '0' || e.key > '9') {
+                        e.preventDefault();
+                        input.classList.add('invalid');
+
+                        // Remove a classe invalid após 2 segundos
+                        setTimeout(() => {
+                            input.classList.remove('invalid');
+                        }, 2000);
+                    }
+                });
+
+                // Validar o comprimento ao sair do campo
+                input.addEventListener('blur', function () {
+                    if (this.value.length !== 11 && this.value.length > 0) {
+                        input.classList.add('invalid');
+                    } else if (this.value.length === 11) {
+                        input.classList.remove('invalid');
+                    }
+                });
+
+                // Remover invalid ao digitar
+                input.addEventListener('input', function () {
+                    if (this.value.length === 11) {
+                        input.classList.remove('invalid');
+                    }
+                });
+            });
+        });
+
+        (function () {
+            const table = document.getElementById('tabelaAtividades').closest('table');
+            if (!table) return;
+
+            // Adicionar elementos de redimensionamento
+            const ths = table.querySelectorAll('thead th');
+            ths.forEach((th, index) => {
+                const resizer = document.createElement('div');
+                resizer.className = 'resizer';
+                resizer.dataset.col = index;
+                th.appendChild(resizer);
+
+                // Estilo para o redimensionador
+                resizer.style.position = 'absolute';
+                resizer.style.right = '0';
+                resizer.style.top = '0';
+                resizer.style.width = '8px';
+                resizer.style.height = '100%';
+                resizer.style.cursor = 'col-resize';
+                resizer.style.userSelect = 'none';
+                resizer.style.touchAction = 'none';
+                resizer.style.zIndex = '60';
+            });
+
+            const colgroup = table.querySelectorAll('col');
+            const container = table.closest('.table-container');
+
+            // Função utilitária para obter valor numérico de uma largura CSS (px)
+            function pxToNumber(px) {
+                return px ? parseFloat(px.replace('px', '')) : 0;
+            }
+
+            // Adiciona listeners aos resizers
+            const resizers = table.querySelectorAll('.resizer');
+
+            resizers.forEach(resizer => {
+                const colIndex = Number(resizer.dataset.col);
+                let startX, startWidth;
+
+                const minWidth = 60; // px mínimo absoluto
+
+                const mouseDown = function (e) {
+                    e.preventDefault();
+                    startX = e.clientX || (e.touches && e.touches[0].clientX);
+                    // largura atual da coluna (colgroup)
+                    startWidth = colgroup[colIndex].getBoundingClientRect().width;
+
+                    // evitar seleção de texto durante o drag
+                    document.body.style.userSelect = 'none';
+                    document.body.style.cursor = 'col-resize';
+
+                    document.addEventListener('mousemove', mouseMove);
+                    document.addEventListener('mouseup', mouseUp);
+                    // suporte touch
+                    document.addEventListener('touchmove', mouseMove, { passive: false });
+                    document.addEventListener('touchend', mouseUp);
+                };
+
+                const mouseMove = function (e) {
+                    e.preventDefault();
+                    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                    const dx = clientX - startX;
+                    let newWidth = Math.max(minWidth, startWidth + dx);
+
+                    // aplica largura em px diretamente no <col> correspondente
+                    colgroup[colIndex].style.width = newWidth + 'px';
+
+                    // se quiser manter o cabeçalho bonito: também atualiza o th correspondente
+                    if (ths[colIndex]) ths[colIndex].style.width = newWidth + 'px';
+                };
+
+                const mouseUp = function () {
+                    document.removeEventListener('mousemove', mouseMove);
+                    document.removeEventListener('mouseup', mouseUp);
+                    document.removeEventListener('touchmove', mouseMove);
+                    document.removeEventListener('touchend', mouseUp);
+
+                    document.body.style.userSelect = '';
+                    document.body.style.cursor = '';
+
+                    // opcional: guardar larguras no localStorage para persistir entre reloads
+                    // salvarLarguras();
+                };
+
+                resizer.addEventListener('mousedown', mouseDown);
+                resizer.addEventListener('touchstart', mouseDown, { passive: false });
+            });
+
+            // ---- (opcional) persistência: recuperar larguras salvas
+            function carregarLarguras() {
+                try {
+                    const raw = localStorage.getItem('activitiesTableColWidths');
+                    if (!raw) return;
+                    const arr = JSON.parse(raw);
+                    arr.forEach((w, i) => {
+                        if (colgroup[i] && w) colgroup[i].style.width = w;
+                    });
+                } catch (e) { /* ignore */ }
+            }
+
+            function salvarLarguras() {
+                const arr = Array.from(colgroup).map(c => c.style.width || window.getComputedStyle(c).width);
+                localStorage.setItem('activitiesTableColWidths', JSON.stringify(arr));
+            }
+
+            // Descomente as linhas abaixo para habilitar a persistência
+            carregarLarguras();
+            window.addEventListener('beforeunload', salvarLarguras);
+        })();
+    </script>
+</body>
+
+</html>
