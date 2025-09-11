@@ -371,14 +371,28 @@
 
                         <div class="table-container">
                             <table class="activities-table">
+                                <colgroup>
+                                    <col style="width:300px">
+                                    <col style="width:150px">
+                                    <col style="width:120px">
+                                    <col style="width:120px">
+                                    <col style="width:150px">
+                                    <col style="width:120px">
+                                </colgroup>
                                 <thead>
                                     <tr>
-                                        <th>Nome</th>
-                                        <th>Matrícula</th>
-                                        <th>Horas Registradas</th>
-                                        <th>Horas Validadas</th>
-                                        <th>Progresso</th>
-                                        <th>Ações</th>
+                                        <th>Nome<div class="resizer" data-col="0"></div>
+                                        </th>
+                                        <th>Matrícula<div class="resizer" data-col="1"></div>
+                                        </th>
+                                        <th>Horas Registradas<div class="resizer" data-col="2"></div>
+                                        </th>
+                                        <th>Horas Validadas<div class="resizer" data-col="3"></div>
+                                        </th>
+                                        <th>Progresso<div class="resizer" data-col="4"></div>
+                                        </th>
+                                        <th>Ações<div class="resizer" data-col="5"></div>
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabelaTurma">
@@ -393,12 +407,16 @@
                 <div class="tab-content coordinator-only" id="atividades-estudante">
                     <!-- Resumo do Estudante -->
                     <div class="form-container">
-                        <h3 class="form-title">
-                            <i class="fas fa-user-graduate"></i> Atividades do Estudante: <span
-                                id="nomeEstudanteSelecionado">Nenhum selecionado</span>
-                            <button class="form-btn secondary" onclick="voltarParaTurma()">
-                                <i class="fas fa-arrow-left"></i> Voltar para Turma
-                            </button>
+                        <h3 class="form-title" style="justify-content: space-between;">
+                            <div>
+                                <i class="fas fa-user-graduate"></i> Atividades do Estudante: <span
+                                    id="nomeEstudanteSelecionado">Nenhum selecionado</span>
+                            </div>
+                            <div>
+                                <button class="form-btn secondary" onclick="voltarParaTurma()">
+                                    <i class="fas fa-arrow-left"></i> Voltar para Turma
+                                </button>
+                            </div>
                         </h3>
 
                         <!-- Filtros -->
@@ -422,23 +440,42 @@
 
                         <div class="table-container">
                             <table class="activities-table">
+                                <colgroup>
+                                    <col style="width:400px">
+                                    <col style="width:375px">
+                                    <col style="width:100px">
+                                    <col style="width:100px">
+                                    <col style="width:100px">
+                                    <col style="width:120px">
+                                    <col style="width:100px">
+                                    <col style="width:125px">
+                                </colgroup>
                                 <thead>
                                     <tr>
-                                        <th>Nome</th>
-                                        <th>Tipo</th>
-                                        <th>Horas Registradas</th>
-                                        <th>Horas Validadas</th>
-                                        <th>Período</th>
-                                        <th>Status</th>
-                                        <th>Comprovante</th>
-                                        <th>Ações</th>
+                                        <th>Nome<div class="resizer" data-col="0"></div>
+                                        </th>
+                                        <th>Tipo<div class="resizer" data-col="1"></div>
+                                        </th>
+                                        <th>Horas Registradas<div class="resizer" data-col="2"></div>
+                                        </th>
+                                        <th>Horas Validadas<div class="resizer" data-col="3"></div>
+                                        </th>
+                                        <th>Período<div class="resizer" data-col="4"></div>
+                                        </th>
+                                        <th>Status<div class="resizer" data-col="5"></div>
+                                        </th>
+                                        <th>Comprovante<div class="resizer" data-col="6"></div>
+                                        </th>
+                                        <th>Ações<div class="resizer" data-col="7"></div>
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabelaAtividadesEstudante">
-                                    <!-- Conteúdo será preenchido por JavaScript -->
                                     <tr>
-                                        <td colspan="8" style="text-align: center;">Selecione um Estudante</td>
+                                        <td colspan="8" style="text-align: center;">Nenhum estudante selecionado.
+                                            Selecione um estudante</td>
                                     </tr>
+                                    <!-- Conteúdo será preenchido por JavaScript -->
                                 </tbody>
                             </table>
                         </div>
@@ -449,11 +486,15 @@
                 <div class="tab-content coordinator-only" id="estatisticas-estudante">
                     <!-- Estatísticas do Estudante -->
                     <div class="form-container">
-                        <h3 class="form-title"><i class="fas fa-chart-pie"></i> Estatísticas do Estudante:
-                            <span id="nomeEstudanteSelecionado">Nenhum selecionado</span>
-                            <button class="form-btn secondary" onclick="voltarParaTurma()">
-                                <i class="fas fa-arrow-left"></i> Voltar para Turma
-                            </button>
+                        <h3 class="form-title" style="justify-content: space-between;">
+                            <div>
+                                <i class="fas fa-chart-pie"></i> Estatísticas do Estudante:
+                                <span id="nomeEstudanteSelecionado">Nenhum selecionado</span>
+                            </div>
+                            <div><button class="form-btn secondary" onclick="voltarParaTurma()">
+                                    <i class="fas fa-arrow-left"></i> Voltar para Turma
+                                </button>
+                            </div>
                         </h3>
                         <div class="form-container">
                             <div class="chart-container" style="height: 300px; position: relative;">
@@ -494,7 +535,7 @@
                             </div>
                             <div class="progress-bar">
                                 <div class="progress-fill" id="horasValidadasFillEstudante"
-                                    style="width: 0%; height: 100%; background: linear-gradient(to right, var(--orange), var(--dark-orange));">
+                                    style="width: 0%; height: 100%; background: linear-gradient(to right, #28a745, #218838);">
                                 </div>
                             </div>
                         </div>
@@ -598,19 +639,38 @@
 
                     <div class="table-container">
                         <table class="activities-table">
+                            <colgroup>
+                                <col style="width:400px">
+                                <col style="width:375px">
+                                <col style="width:100px">
+                                <col style="width:100px">
+                                <col style="width:100px">
+                                <col style="width:125px">
+                                <col style="width:100px">
+                                <col style="width:100px">
+                            </colgroup>
                             <thead>
                                 <tr>
-                                    <th style="text-align: center; vertical-align: middle">Nome</th>
-                                    <th style="text-align: center; vertical-align: middle">Tipo</th>
-                                    <th style="text-align: center; vertical-align: middle">Horas Registradas</th>
-                                    <th style="text-align: center; vertical-align: middle">Horas Validadas</th>
-                                    <th style="text-align: center; vertical-align: middle">Período</th>
-                                    <th style="text-align: center; vertical-align: middle">Status</th>
-                                    <th style="text-align: center; vertical-align: middle">Comprovante</th>
-                                    <th style="text-align: center; vertical-align: middle">Ações</th>
+                                    <th>Nome<div class="resizer" data-col="0"></div>
+                                    </th>
+                                    <th>Tipo<div class="resizer" data-col="1"></div>
+                                    </th>
+                                    <th>Horas Registradas<div class="resizer" data-col="2"></div>
+                                    </th>
+                                    <th>Horas Validadas<div class="resizer" data-col="3"></div>
+                                    </th>
+                                    <th>Período<div class="resizer" data-col="4"></div>
+                                    </th>
+                                    <th>Status<div class="resizer" data-col="5"></div>
+                                    </th>
+                                    <th>Comprovante<div class="resizer" data-col="6"></div>
+                                    </th>
+                                    <th>Ações<div class="resizer" data-col="7"></div>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody id="tabelaAtividades">
+                                <!-- Conteúdo será preenchido por JavaScript -->
                             </tbody>
                         </table>
                     </div>
@@ -787,31 +847,12 @@
             });
         });
 
-        (function () {
-            const table = document.getElementById('tabelaAtividades').closest('table');
+        // Função para inicializar o redimensionamento de colunas
+        function initTableResize(table) {
             if (!table) return;
 
-            // Adicionar elementos de redimensionamento
-            const ths = table.querySelectorAll('thead th');
-            ths.forEach((th, index) => {
-                const resizer = document.createElement('div');
-                resizer.className = 'resizer';
-                resizer.dataset.col = index;
-                th.appendChild(resizer);
-
-                // Estilo para o redimensionador
-                resizer.style.position = 'absolute';
-                resizer.style.right = '0';
-                resizer.style.top = '0';
-                resizer.style.width = '8px';
-                resizer.style.height = '100%';
-                resizer.style.cursor = 'col-resize';
-                resizer.style.userSelect = 'none';
-                resizer.style.touchAction = 'none';
-                resizer.style.zIndex = '60';
-            });
-
             const colgroup = table.querySelectorAll('col');
+            const ths = table.querySelectorAll('thead th');
             const container = table.closest('.table-container');
 
             // Função utilitária para obter valor numérico de uma largura CSS (px)
@@ -893,10 +934,16 @@
             }
 
             // Descomente as linhas abaixo para habilitar a persistência
-            carregarLarguras();
-            window.addEventListener('beforeunload', salvarLarguras);
-        })();
+            // carregarLarguras();
+            // window.addEventListener('beforeunload', salvarLarguras);
+        }
+
+        // Inicializar redimensionamento para todas as tabelas
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.activities-table').forEach(table => {
+                initTableResize(table);
+            });
+        });
     </script>
 </body>
-
 </html>
