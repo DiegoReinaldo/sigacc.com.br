@@ -27,7 +27,7 @@
     --light-pending: #fff3cd;
     --dark-pending: #856404;
 
-    /* Cores para estudantes (padrão original - laranja/azul) */
+    /* Cores para estudantes */
     --student-primary: var(--orange);
     --student-primary-dark: var(--dark-orange);
     --student-primary-light: var(--light-orange);
@@ -35,7 +35,7 @@
     --student-secondary-dark: var(--medium-blue);
     --student-secondary-light: var(--light-blue);
 
-    /* Cores para coordenadores (verde) */
+    /* Cores para coordenadores */
     --coordinator-primary: var(--orange);
     --coordinator-primary-dark: var(--dark-orange);
     --coordinator-primary-light: var(--light-orange);
@@ -43,7 +43,7 @@
     --coordinator-secondary-dark: var(--medium-blue);
     --coordinator-secondary-light: var(--light-blue);
 
-    /* Cores para administradores (roxo) */
+    /* Cores para administradores */
     --admin-primary: var(--orange);
     --admin-primary-dark: var(--dark-orange);
     --admin-primary-light: var(--light-orange);
@@ -52,7 +52,7 @@
     --admin-secondary-light: var(--light-blue);
 }
 
-/* Estilos gerais (mantidos do sistema original) */
+/* Estilos gerais */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -267,6 +267,7 @@ body.user-admin .form-group label {
     outline: none;
 }
 
+/*
 body.user-coordinator .form-group input:focus {
     border-color: var(--coordinator-primary);
     box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
@@ -275,7 +276,7 @@ body.user-coordinator .form-group input:focus {
 body.user-admin .form-group input:focus {
     border-color: var(--admin-primary);
     box-shadow: 0 0 0 3px rgba(111, 66, 193, 0.2);
-}
+}*/
 
 .form-group input::placeholder {
     color: var(--medium-gray);
@@ -324,12 +325,14 @@ body.user-admin .password-toggle:hover {
 
 body.user-coordinator .login-btn {
     background: linear-gradient(to right, var(--coordinator-primary), var(--coordinator-secondary));
-    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+    /* box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3); */
+    box-shadow: 0 5px 15px rgba(243, 115, 33, 0.3);
 }
 
 body.user-admin .login-btn {
     background: linear-gradient(to right, var(--admin-primary), var(--admin-secondary));
-    box-shadow: 0 5px 15px rgba(111, 66, 193, 0.3);
+    /* box-shadow: 0 5px 15px rgba(111, 66, 193, 0.3); */
+    box-shadow: 0 5px 15px rgba(243, 115, 33, 0.3);
 }
 
 .login-btn:hover {
@@ -340,12 +343,14 @@ body.user-admin .login-btn {
 
 body.user-coordinator .login-btn:hover {
     background: linear-gradient(to right, var(--coordinator-primary-dark), var(--coordinator-secondary-dark));
-    box-shadow: 0 7px 20px rgba(40, 167, 69, 0.4);
+    /*box-shadow: 0 7px 20px rgba(40, 167, 69, 0.4);*/
+    box-shadow: 0 7px 20px rgba(243, 115, 33, 0.4);
 }
 
 body.user-admin .login-btn:hover {
     background: linear-gradient(to right, var(--admin-primary-dark), var(--admin-secondary-dark));
-    box-shadow: 0 7px 20px rgba(111, 66, 193, 0.4);
+    /*box-shadow: 0 7px 20px rgba(111, 66, 193, 0.4);*/
+    box-shadow: 0 7px 20px rgba(243, 115, 33, 0.4);
 }
 
 .login-btn:active {
@@ -584,6 +589,8 @@ body.user-admin .login-btn:hover {
     background: rgba(243, 115, 33, 1);
 }
 
+
+/*
 body.user-coordinator .header-btn.logout:hover {
     background: rgba(40, 167, 69, 1);
 }
@@ -591,6 +598,7 @@ body.user-coordinator .header-btn.logout:hover {
 body.user-admin .header-btn.logout:hover {
     background: rgba(111, 66, 193, 1);
 }
+*/
 
 /* Container de abas */
 .tabs-container {
@@ -695,6 +703,7 @@ body.user-admin .header-btn.logout:hover {
     display: flex;
     align-items: center;
     gap: 10px;
+    text-overflow: ellipsis;
 }
 
 .student-only .form-title {
@@ -1073,8 +1082,10 @@ body.user-admin .header-btn.logout:hover {
 /* células */
 .activities-table th {
     white-space: nowrap;
+    /* Impede a quebra de texto */
     overflow: hidden;
     text-overflow: ellipsis;
+    /* Adiciona "..." quando o texto é muito longo */
     text-align: center;
     vertical-align: middle;
     padding: 0.75rem 1rem;
@@ -1302,6 +1313,12 @@ body.user-admin .header-btn.logout:hover {
     background: linear-gradient(to right, var(--coordinator-primary), var(--coordinator-primary-dark));
 }
 
+#atividades-estudante .progress-fill {
+    height: 100%;
+    border-radius: 5px;
+    background: linear-gradient(to right, var(--coordinator-primary), var(--coordinator-primary-dark));
+}
+
 #atividades-estudante .progress-label {
     display: flex;
     justify-content: space-between;
@@ -1403,22 +1420,6 @@ body.user-admin .header-btn.logout:hover {
     height: 100%;
     border-radius: 10px;
     transition: width 0.5s ease;
-}
-
-/* Cor para a barra de progresso total */
-#progressoTotalFillEstudante {
-    background: linear-gradient(to right, var(--orange), var(--dark-orange));
-}
-
-/* Cor para a barra de horas validadas */
-#horasValidadasFillEstudante {
-    background: linear-gradient(to right, #28a745, #218838);
-}
-
-/* Garantir que as barras tenham largura inicial zero */
-#progressoTotalFillEstudante,
-#horasValidadasFillEstudante {
-    width: 0% !important;
 }
 
 /* Tags de restrição */
