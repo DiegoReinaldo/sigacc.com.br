@@ -1228,6 +1228,10 @@ function initTabListeners() {
                         carregarTurma();
                     } else if (tabId === "resumo") {
                         atualizarGraficoResumo();
+                    } else if (tabId === "estatisticas-estudante") {
+                        if (selectedStudent) {
+                            carregarEstatisticasEstudante(selectedStudent);
+                        }
                     } else if (tabId === "exibir") {
                         atualizarTabela();
                     } else if (tabId === "atividades-estudante" && selectedStudent) {
@@ -2188,7 +2192,7 @@ async function carregarTurma() {
                 totalEstudantesComHoras++;
             }
 
-            totalHorasValidadasTurma += horasValidadas;
+            totalHorasValidadasTurma += Math.min(HORAS_NECESSARIAS, horasValidadas);
 
             const progresso = Math.min(100, (horasValidadas / HORAS_NECESSARIAS) * 100);
 
@@ -2196,13 +2200,13 @@ async function carregarTurma() {
             row.innerHTML = `
                 <td>${estudante.nome}</td>
                 <td>${estudante.matricula}</td>
-                <td>${horasRegistradas.toFixed(1)}</td>
-                <td>${horasValidadas.toFixed(1)}</td>
+                <td>${horasRegistradas}</td>
+                <td>${horasValidadas}</td>
                 <td>
                     <div class="progress-bar-container">
-                        <div class="progress-bar-fill" style="width: ${progresso}%"></div>
+                        <div class="progress-bar-fill" style="width: ${Math.round(progresso)}%"></div>
                     </div>
-                    <small>${progresso.toFixed(1)}%</small>
+                    <small>${Math.round(progresso)}%</small>
                 </td>
                 <td>
                     <button class="btn-icon btn-view" onclick="visualizarAtividades('${estudante.usuario}')">
@@ -2215,7 +2219,11 @@ async function carregarTurma() {
         }
 
         // Calcular progresso médio da turma
-        const progressoMedio = totalEstudantes > 0 ? (totalHorasValidadasTurma / (HORAS_NECESSARIAS * totalEstudantes)) * 100 : 0;
+        if (totalEstudantes > 0) {
+            progressoMedio = Math.min(100, Math.round((totalHorasValidadasTurma / (HORAS_NECESSARIAS * totalEstudantes)) * 100));
+        } else {
+            progressoMedio = 0;
+        }
 
         // Atualizar KPIs
         atualizarKPIsTurma(totalEstudantes, totalEstudantesComHoras, progressoMedio);
@@ -2239,7 +2247,7 @@ function atualizarKPIsTurma(totalEstudantes, estudantesComHoras, progressoMedio)
 
     if (totalEstudantesElem) totalEstudantesElem.textContent = totalEstudantes;
     if (estudantesComHorasElem) estudantesComHorasElem.textContent = estudantesComHoras;
-    if (progressoMedioElem) progressoMedioElem.textContent = progressoMedio.toFixed(1) + '%';
+    if (progressoMedioElem) progressoMedioElem.textContent = progressoMedio + '%';
 }
 
 /**
@@ -2287,9 +2295,6 @@ function visualizarAtividades(usuarioEstudante) {
 
         // Carregar atividades e resumo
         carregarAtividadesEstudante(usuarioEstudante);
-        carregarEstatisticasEstudante(usuarioEstudante);
-        atualizarResumoEstudante(usuarioEstudante);
-
     };
 }
 
@@ -2361,7 +2366,7 @@ async function carregarAtividadesEstudante(usuarioEstudante, tentativas = 0) {
                     </button>
                 </td>
                 <td>
-                    <div style="display: flex; gap: 10px;">
+                    <div style="display: inline-flex; flex-direction: column; gap: 10px;">
                         <button class="btn-icon btn-edit" onclick="avaliarAtividade(${atividade.id}, 'Aprovado')">
                             <i class="fa-solid fa-check"></i> Aprovar
                         </button>
@@ -2387,38 +2392,6 @@ function aplicarFiltrosAtividades() {
     if (selectedStudent) {
         carregarAtividadesEstudante(selectedStudent);
     }
-}
-
-/**
- * Atualiza o resumo do estudante
- * @param {string} usuarioEstudante Usuário do estudante
- */
-async function atualizarResumoEstudante(usuarioEstudante) {
-    let totalHorasRegistradas = 0;
-    let totalHorasValidadas = 0;
-
-    const atividades = await getAtividadesPorUsuario(usuarioEstudante);
-    atividades.forEach(atividade => {
-        totalHorasRegistradas += atividade.horasRegistradas;
-        totalHorasValidadas += atividade.horasValidadas;
-    });
-
-    const progressoTotal = Math.min(100, (totalHorasValidadas / HORAS_NECESSARIAS) * 100);
-
-    // Atualizar elementos do resumo
-    const resumoHorasRegistradas = getElementSafe("resumoHorasRegistradasEstudante");
-    const resumoHorasValidadas = getElementSafe("resumoHorasValidadasEstudante");
-    const progressoTotalEstudante = getElementSafe("progressoTotalEstudante");
-    const progressoTotalFillEstudante = getElementSafe("progressoTotalFillEstudante");
-    const horasValidadasEstudante = getElementSafe("horasValidadasEstudante");
-    const horasValidadasFillEstudante = getElementSafe("horasValidadasFillEstudante");
-
-    if (resumoHorasRegistradas) resumoHorasRegistradas.textContent = totalHorasRegistradas.toFixed(1);
-    if (resumoHorasValidadas) resumoHorasValidadas.textContent = totalHorasValidadas.toFixed(1);
-    if (progressoTotalEstudante) progressoTotalEstudante.textContent = progressoTotal.toFixed(1) + '%';
-    if (progressoTotalFillEstudante) progressoTotalFillEstudante.style.width = progressoTotal + '%';
-    if (horasValidadasEstudante) horasValidadasEstudante.textContent = `${totalHorasValidadas.toFixed(1)}/225`;
-    if (horasValidadasFillEstudante) horasValidadasFillEstudante.style.width = progressoTotal + '%';
 }
 
 /**
@@ -2478,8 +2451,7 @@ async function avaliarAtividade(id, status) {
         // Recarregar as atividades do estudante
         carregarAtividadesEstudante(selectedStudent);
         atualizarResumoEstudante(selectedStudent);
-        await atualizarEstudanteNaTurma(selectedStudent);
-        carregarEstatisticasEstudante(selectedStudent);
+        atualizarEstudanteNaTurma(selectedStudent);
 
         // Atualizar o resumo da turma
         carregarTurma();
@@ -2658,81 +2630,6 @@ async function consultarHorasPorTipo(tipo, periodo = null, excludeId = null, usu
     });
 }
 
-// Função para carregar as estatísticas do estudante selecionado
-async function carregarEstatisticasEstudante(usuarioEstudante) {
-    if (!usuarioEstudante) return;
-
-    try {
-        // Buscar dados do estudante
-        const estudante = await new Promise((resolve, reject) => {
-            const transaction = db.transaction(["estudantes"], "readonly");
-            const store = transaction.objectStore("estudantes");
-            const request = store.get(usuarioEstudante);
-
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject("Erro ao buscar estudante");
-        });
-
-        if (!estudante) return;
-
-        // Atualizar nome do estudante
-        const elementosNome = document.querySelectorAll('#estatisticas-estudante #nomeEstudanteSelecionado');
-        elementosNome.forEach(el => {
-            el.textContent = estudante.nome;
-        });
-
-        // Carregar atividades e atualizar estatísticas
-        const atividades = await getAtividadesPorUsuario(usuarioEstudante);
-        atualizarEstatisticasEstudante(atividades);
-
-    } catch (error) {
-        console.error("Erro ao carregar estatísticas do estudante:", error);
-        showSystemMessage("Erro ao carregar estatísticas do estudante", "error");
-    }
-}
-
-// Função para atualizar as estatísticas na interface
-function atualizarEstatisticasEstudante(atividades) {
-    let totalHorasRegistradas = 0;
-    let totalHorasValidadas = 0;
-
-    atividades.forEach(atividade => {
-        totalHorasRegistradas += atividade.horasRegistradas;
-        if (atividade.status === 'Aprovado') {
-            totalHorasValidadas += atividade.horasValidadas;
-        }
-    });
-
-    // Atualizar resumo de horas
-    document.getElementById('resumoHorasRegistradasEstudante').textContent = totalHorasRegistradas.toFixed(1);
-    document.getElementById('resumoHorasValidadasEstudante').textContent = totalHorasValidadas.toFixed(1);
-
-    // Calcular e atualizar progresso
-    const progressoTotal = Math.min(100, (totalHorasValidadas / HORAS_NECESSARIAS) * 100);
-    document.getElementById('progressoTotalEstudante').textContent = progressoTotal.toFixed(1) + '%';
-
-    // Atualizar a barra de progresso total - COM ATRASO PARA GARANTIR QUE O DOM ESTÁ PRONTO
-    setTimeout(() => {
-        const progressoTotalFill = document.getElementById('progressoTotalFillEstudante');
-        if (progressoTotalFill) {
-            progressoTotalFill.style.width = progressoTotal + '%';
-        }
-    }, 100);
-
-    document.getElementById('horasValidadasEstudante').textContent = `${totalHorasValidadas.toFixed(1)}/225`;
-
-    // Atualizar a barra de horas validadas - COM ATRASO PARA GARANTIR QUE O DOM ESTÁ PRONTO
-    setTimeout(() => {
-        const horasValidadasFill = document.getElementById('horasValidadasFillEstudante');
-        if (horasValidadasFill) {
-            horasValidadasFill.style.width = progressoTotal + '%';
-        }
-    }, 100);
-
-    // Atualizar gráfico
-    atualizarGraficoEstatisticas(atividades);
-}
-
 // Função para atualizar o gráfico de estatísticas
 async function atualizarGraficoEstatisticas(atividades) {
     const ctx = document.getElementById('hoursChartCoordinator');
@@ -2775,9 +2672,12 @@ async function atualizarGraficoEstatisticas(atividades) {
         }
     }
 
-    // Sempre inclui a fatia "Horas Restantes" (pode ser 0)
-    labels.push('Horas Restantes');
-    data.push(horasRestantes);
+    // Inclui a fatia "Horas Restantes"
+    if (horasRestantes > 0) {
+        labels.push('Horas Restantes');
+        data.push(horasRestantes);
+    }
+
 
     // Cores base para os grupos
     const baseColors = [
@@ -2793,8 +2693,10 @@ async function atualizarGraficoEstatisticas(atividades) {
         }
     }
 
-    // Forçar cor cinza para 'Horas Restantes' (último elemento)
-    backgroundColors[backgroundColors.length - 1] = '#e9ecef';
+    // Define a cor para a fatia "Horas Restantes"
+    if (horasRestantes > 0) {
+        backgroundColors[backgroundColors.length - 1] = '#e9ecef';
+    }
 
     // Criar o gráfico
     window.horasChartCoordinator = new Chart(ctx, {
@@ -2830,6 +2732,119 @@ async function atualizarGraficoEstatisticas(atividades) {
             }
         }
     });
+}
+
+// =============================================
+// FUNÇÃO UNIFICADA PARA ATUALIZAR UI DO ESTUDANTE
+// =============================================
+
+/**
+ * Atualiza a interface do usuário com os totais de horas do estudante
+ * @param {number} totalHorasRegistradas Total de horas registradas
+ * @param {number} totalHorasValidadas Total de horas validadas
+ */
+function atualizarUIEstudante(totalHorasRegistradas, totalHorasValidadas) {
+    const progressoTotal = Math.min(100, Math.round((totalHorasValidadas / HORAS_NECESSARIAS) * 100));
+
+    // Elementos de texto
+    const resumoHorasRegistradasEstudante = getElementSafe('resumoHorasRegistradasEstudante');
+    const resumoHorasValidadasEstudante = getElementSafe('resumoHorasValidadasEstudante');
+    const progressoTotalEstudante = getElementSafe('progressoTotalEstudante');
+    const horasValidadasEstudante = getElementSafe('horasValidadasEstudante');
+
+    // Barras de progresso
+    const progressoTotalFillEstudante = getElementSafe('progressoTotalFillEstudante');
+    const horasValidadasFillEstudante = getElementSafe('horasValidadasFillEstudante');
+
+    if (resumoHorasRegistradasEstudante) resumoHorasRegistradasEstudante.textContent = totalHorasRegistradas;
+    if (resumoHorasValidadasEstudante) resumoHorasValidadasEstudante.textContent = totalHorasValidadas;
+    if (progressoTotalEstudante) progressoTotalEstudante.textContent = `${progressoTotal}%`;
+    if (horasValidadasEstudante) horasValidadasEstudante.textContent = `${totalHorasValidadas}/${HORAS_NECESSARIAS}`;
+
+    if (progressoTotalFillEstudante) progressoTotalFillEstudante.style.width = `${progressoTotal}%`;
+    if (horasValidadasFillEstudante) horasValidadasFillEstudante.style.width = `${progressoTotal}%`;
+}
+
+/**
+ * Atualiza o resumo do estudante (usada quando o coordenador avalia uma atividade)
+ * @param {string} selectedStudent Usuário do estudante selecionado
+ */
+async function atualizarResumoEstudante(selectedStudent) {
+    try {
+        const atividades = await getAtividadesPorUsuario(selectedStudent);
+        let totalHorasRegistradas = 0;
+        let totalHorasValidadas = 0;
+
+        atividades.forEach(atividade => {
+            totalHorasRegistradas += atividade.horasRegistradas;
+            if (atividade.status === 'Aprovado') {
+                totalHorasValidadas += atividade.horasValidadas;
+            }
+        });
+
+        // Atualizar a UI com os totais calculados
+        atualizarUIEstudante(totalHorasRegistradas, totalHorasValidadas);
+    } catch (error) {
+        console.error("Erro ao atualizar resumo do estudante:", error);
+    }
+}
+
+/**
+ * Atualiza as estatísticas do estudante (usada quando a aba de estatísticas é aberta)
+ * @param {Array} atividades Lista de atividades do estudante
+ */
+function atualizarEstatisticasEstudante(atividades) {
+    let totalHorasRegistradas = 0;
+    let totalHorasValidadas = 0;
+
+    atividades.forEach(atividade => {
+        totalHorasRegistradas += atividade.horasRegistradas;
+        if (atividade.status === 'Aprovado') {
+            totalHorasValidadas += atividade.horasValidadas;
+        }
+    });
+
+    // Atualizar a UI com os totais calculados
+    atualizarUIEstudante(totalHorasRegistradas, totalHorasValidadas);
+
+    // Atualizar o gráfico (apenas na aba de estatísticas)
+    atualizarGraficoEstatisticas(atividades);
+}
+
+/**
+ * Carrega as estatísticas do estudante selecionado
+ * @param {string} usuarioEstudante Usuário do estudante
+ */
+async function carregarEstatisticasEstudante(usuarioEstudante) {
+    if (!usuarioEstudante) return;
+
+    try {
+        // Buscar dados do estudante
+        const estudante = await new Promise((resolve, reject) => {
+            const transaction = db.transaction(["estudantes"], "readonly");
+            const store = transaction.objectStore("estudantes");
+            const request = store.get(usuarioEstudante);
+
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject("Erro ao buscar estudante");
+        });
+
+        if (!estudante) return;
+
+        // Atualizar nome do estudante
+        const elementosNome = document.querySelectorAll('#estatisticas-estudante #nomeEstudanteSelecionado');
+        elementosNome.forEach(el => {
+            el.textContent = estudante.nome;
+        });
+
+        // Carregar atividades e atualizar estatísticas
+        const atividades = await getAtividadesPorUsuario(usuarioEstudante);
+        atualizarEstatisticasEstudante(atividades);
+
+    } catch (error) {
+        console.error("Erro ao carregar estatísticas do estudante:", error);
+        showSystemMessage("Erro ao carregar estatísticas do estudante", "error");
+    }
 }
 
 // =============================================
@@ -3330,9 +3345,11 @@ async function atualizarGraficoResumo() {
                 }
             }
 
-            // Sempre inclui a fatia "Horas Restantes" (pode ser 0)
-            labels.push('Horas Restantes');
-            data.push(horasRestantes);
+            // Inclui a fatia "Horas Restantes"
+            if (horasRestantes > 0) {
+                labels.push('Horas Restantes');
+                data.push(horasRestantes);
+            }
 
             // Cores base para os grupos; última cor será usada para "Horas Restantes"
             const baseColors = [
@@ -3346,8 +3363,11 @@ async function atualizarGraficoResumo() {
                     backgroundColors.push('#d1d3e2');
                 }
             }
-            // Forçar cor cinza para 'Horas Restantes' (último elemento)
-            backgroundColors[backgroundColors.length - 1] = '#e9ecef';
+
+            // Define o cor padrão para "Horas Restantes"
+            if (horasRestantes > 0) {
+                backgroundColors[backgroundColors.length - 1] = '#e9ecef';
+            }
 
             horasChart = new Chart(ctx2d, {
                 type: 'doughnut',
@@ -3742,7 +3762,7 @@ async function handleImprimir() {
         // Totais
         const totalHorasRegistradas = atividades.reduce((sum, a) => sum + a.horasRegistradas, 0);
         const totalHorasValidadas = atividades.reduce((sum, a) => sum + a.horasValidadas, 0);
-        const progresso = (totalHorasValidadas / 225) * 100;
+        const progresso = Math.min(100, Math.round((totalHorasValidadas / 225) * 100));
 
         doc.setFontSize(11);
         doc.setFont("helvetica", "bold");
@@ -3769,7 +3789,7 @@ async function handleImprimir() {
 
         // Texto da barra
         doc.setFontSize(9);
-        doc.text(`Progresso: ${progresso.toFixed(1)}%`, barX, barY - 2);
+        doc.text(`Progresso: ${progresso}%`, barX, barY - 2);
         doc.text(`${totalHorasValidadas} / 225 horas`, barX + barWidth + 5, barY + barHeight / 2 + 1);
 
         // Rodapé institucional
@@ -3782,7 +3802,7 @@ async function handleImprimir() {
         doc.setTextColor(100, 100, 100);
         doc.text("Centro de Ciências Tecnológicas - CCT/UEMA, Cidade Universitária Paulo VI, São Luís - MA", 105, footerY + 5, null, null, 'center');
         doc.text("Contato: diego.dbr811@gmail.com | Instagram: @eaidih", 105, footerY + 10, null, null, 'center');
-        doc.text("SIGUEMA Acadêmico - Sistema Integrado de Gestão de Atividades Acadêmicas", 105, footerY + 15, null, null, 'center');
+        doc.text("SIGACC - Sistema Integrado de Gestão de Atividades Complementares Curriculares", 105, footerY + 15, null, null, 'center');
 
         // Salvar PDF
         doc.save(`Relatorio_Atividades_Complementares_${nomeAluno.replace(/\s+/g, '_')}.pdf`);
@@ -4237,13 +4257,13 @@ async function atualizarEstudanteNaTurma(usuarioEstudante) {
 
         // Se encontrou a linha, atualizar, senão adicionar nova linha
         if (linhaEncontrada) {
-            linhaEncontrada.cells[2].textContent = horasRegistradas.toFixed(1);
-            linhaEncontrada.cells[3].textContent = horasValidadas.toFixed(1);
+            linhaEncontrada.cells[2].textContent = horasRegistradas;
+            linhaEncontrada.cells[3].textContent = horasValidadas;
             linhaEncontrada.cells[4].innerHTML = `
                 <div class="progress-bar-container">
-                    <div class="progress-bar-fill" style="width: ${progresso}%"></div>
+                    <div class="progress-bar-fill" style="width: ${Math.round(progresso)}%"></div>
                 </div>
-                <small>${progresso.toFixed(1)}%</small>
+                <small>${Math.round(progresso)}%</small>
             `;
         } else {
             // Adicionar nova linha se o estudante não estava na tabela
@@ -4251,13 +4271,13 @@ async function atualizarEstudanteNaTurma(usuarioEstudante) {
             row.innerHTML = `
                 <td>${estudante.nome}</td>
                 <td>${estudante.matricula}</td>
-                <td>${horasRegistradas.toFixed(1)}</td>
-                <td>${horasValidadas.toFixed(1)}</td>
+                <td>${horasRegistradas}</td>
+                <td>${horasValidadas}</td>
                 <td>
                     <div class="progress-bar-container">
                         <div class="progress-bar-fill" style="width: ${progresso}%"></div>
                     </div>
-                    <small>${progresso.toFixed(1)}%</small>
+                    <small>${progresso}%</small>
                 </td>
                 <td>
                     <button class="btn-icon btn-view" onclick="visualizarAtividades('${estudante.usuario}')">
@@ -4267,10 +4287,6 @@ async function atualizarEstudanteNaTurma(usuarioEstudante) {
             `;
             tabela.appendChild(row);
         }
-
-        // Recalcular e atualizar o KPI do coordenador
-        await updateCoordinatorKPI(totalHorasValidadas);
-
     } catch (error) {
         console.error("Erro ao atualizar estudante na turma:", error);
     }
@@ -4295,7 +4311,7 @@ async function atualizarTurma() {
             tabela.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum estudante cadastrado.</td></tr>';
 
             // Atualizar o KPI do coordenador para 0%
-            updateCoordinatorKPI(0);
+            updateCoordinatorKPI(0); // Passa 0 horas
             return;
         }
 
@@ -4315,9 +4331,12 @@ async function atualizarTurma() {
                 }
             });
 
+            // Limita horas por aluno ao máximo necessário
+            const horasValidadasLimitadas = Math.min(horasValidadas, HORAS_NECESSARIAS);
+
             // Acumular totais para o KPI
-            totalHorasValidadasTurma += horasValidadas;
-            if (horasValidadas > 0) totalEstudantesComHoras++;
+            totalHorasValidadasTurma += horasValidadasLimitadas;
+            if (horasValidadasLimitadas > 0) totalEstudantesComHoras++;
 
             const progresso = Math.min(100, (horasValidadas / HORAS_NECESSARIAS) * 100);
 
@@ -4325,13 +4344,13 @@ async function atualizarTurma() {
             row.innerHTML = `
                 <td>${estudante.nome}</td>
                 <td>${estudante.matricula}</td>
-                <td>${horasRegistradas.toFixed(1)}</td>
-                <td>${horasValidadas.toFixed(1)}</td>
+                <td>${horasRegistradas}</td>
+                <td>${horasValidadas}</td>
                 <td>
                     <div class="progress-bar-container">
-                        <div class="progress-bar-fill" style="width: ${progresso}%"></div>
+                        <div class="progress-bar-fill" style="width: ${Math.round(progresso)}%"></div>
                     </div>
-                    <small>${progresso.toFixed(1)}%</small>
+                    <small>${Math.round(progresso)}%</small>
                 </td>
                 <td>
                     <button class="btn-icon btn-view" onclick="visualizarAtividades('${estudante.usuario}')">
@@ -4344,34 +4363,11 @@ async function atualizarTurma() {
         }
 
         // Calcular e atualizar o KPI do coordenador (média de progresso da turma)
-        const mediaProgressoTurma = estudantesDoCoordenador.length > 0 ?
-            (totalHorasValidadasTurma / (HORAS_NECESSARIAS * estudantesDoCoordenador.length)) * 100 : 0;
-
-        updateCoordinatorKPI(mediaProgressoTurma);
+        updateCoordinatorKPI(totalHorasValidadasTurma);
 
     } catch (error) {
         console.error("Erro ao atualizar turma:", error);
         showSystemMessage("Erro ao atualizar turma", "error");
-    }
-}
-
-/**
- * Atualiza o KPI do coordenador com o progresso médio da turma
- */
-async function atualizarKpiCoordenador() {
-    try {
-        const estudantes = await getAllFromStore("estudantes");
-        const estudantesDoCoordenador = estudantes.filter(estudante => estudante.coordenador === currentUser);
-        let totalHorasValidadas = 0;
-
-        for (const estudante of estudantesDoCoordenador) {
-            const atividades = await getAtividadesPorUsuario(estudante.usuario);
-            totalHorasValidadas += atividades.reduce((total, atividade) => total + (atividade.status === 'Aprovado' ? atividade.horasValidadas : 0), 0);
-        }
-
-        updateCoordinatorKPI(totalHorasValidadas);
-    } catch (error) {
-        console.error("Erro ao atualizar KPI do coordenador:", error);
     }
 }
 
