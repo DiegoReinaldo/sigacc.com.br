@@ -1,23 +1,24 @@
+/* =============================================
+   VARIÁVEIS GLOBAIS E CONFIGURAÇÕES DO TEMA
+   ============================================= */
+
 :root {
-    /* Cores base (mantidas do sistema original) */
+    /* ============ PALETA DE CORES PRIMÁRIA ============ */
     --orange: #f37321;
     --dark-orange: #d15c15;
     --light-orange: #ff9c4a;
     --dark-blue: #011b47;
     --medium-blue: #003082;
     --light-blue: #0050b3;
+
+    /* ============ CORES NEUTRAS ============ */
     --white: #ffffff;
     --off-white: #f8f9fa;
     --light-gray: #e9ecef;
     --medium-gray: #ced4da;
     --dark-gray: #495057;
-    --font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    --shadow-light: rgba(0, 0, 0, 0.1);
-    --shadow-medium: rgba(0, 0, 0, 0.15);
-    --shadow-dark: rgba(0, 0, 0, 0.2);
-    --transition: 0.3s ease;
-    --border-radius: 12px;
-    --border-radius-lg: 20px;
+
+    /* ============ CORES DE ESTADO ============ */
     --success: #28a745;
     --warning: #ffc107;
     --danger: #dc3545;
@@ -27,7 +28,20 @@
     --light-pending: #fff3cd;
     --dark-pending: #856404;
 
-    /* Cores para estudantes */
+    /* ============ TIPOGRAFIA ============ */
+    --font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+    /* ============ EFEITOS VISUAIS ============ */
+    --shadow-light: rgba(0, 0, 0, 0.1);
+    --shadow-medium: rgba(0, 0, 0, 0.15);
+    --shadow-dark: rgba(0, 0, 0, 0.2);
+    --transition: 0.3s ease;
+    --border-radius: 12px;
+    --border-radius-lg: 20px;
+
+    /* ============ CORES POR TIPO DE USUÁRIO ============ */
+
+    /* Estudantes */
     --student-primary: var(--orange);
     --student-primary-dark: var(--dark-orange);
     --student-primary-light: var(--light-orange);
@@ -35,7 +49,7 @@
     --student-secondary-dark: var(--medium-blue);
     --student-secondary-light: var(--light-blue);
 
-    /* Cores para coordenadores */
+    /* Coordenadores */
     --coordinator-primary: var(--orange);
     --coordinator-primary-dark: var(--dark-orange);
     --coordinator-primary-light: var(--light-orange);
@@ -43,7 +57,7 @@
     --coordinator-secondary-dark: var(--medium-blue);
     --coordinator-secondary-light: var(--light-blue);
 
-    /* Cores para administradores */
+    /* Administradores */
     --admin-primary: var(--orange);
     --admin-primary-dark: var(--dark-orange);
     --admin-primary-light: var(--light-orange);
@@ -52,7 +66,10 @@
     --admin-secondary-light: var(--light-blue);
 }
 
-/* Estilos gerais */
+/* =============================================
+   RESET E ESTILOS BASE
+   ============================================= */
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -73,6 +90,10 @@ body {
     overflow-x: hidden;
 }
 
+/* =============================================
+   TEMAS POR TIPO DE USUÁRIO
+   ============================================= */
+
 body.user-coordinator {
     background: linear-gradient(135deg, var(--coordinator-primary) 0%, var(--coordinator-secondary) 100%);
 }
@@ -80,6 +101,10 @@ body.user-coordinator {
 body.user-admin {
     background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
 }
+
+/* =============================================
+   ELEMENTOS DECORATIVOS DO FUNDO
+   ============================================= */
 
 .bg-decoration {
     position: absolute;
@@ -118,7 +143,10 @@ body.user-admin {
     right: 15%;
 }
 
-/* Container principal */
+/* =============================================
+   LAYOUT PRINCIPAL
+   ============================================= */
+
 #app-container {
     width: 100%;
     max-width: 100%;
@@ -127,7 +155,10 @@ body.user-admin {
     align-items: center;
 }
 
-/* Tela de Login (comum a todos) */
+/* =============================================
+   COMPONENTE DE LOGIN
+   ============================================= */
+
 .login-container {
     background: rgba(255, 255, 255, 0.95);
     border-radius: var(--border-radius-lg);
@@ -147,6 +178,7 @@ body.user-admin {
     box-shadow: 0 20px 40px var(--shadow-dark);
 }
 
+/* Barra decorativa superior do container de login */
 .login-container::before {
     content: '';
     position: absolute;
@@ -164,6 +196,10 @@ body.user-coordinator .login-container::before {
 body.user-admin .login-container::before {
     background: linear-gradient(to right, var(--admin-primary), var(--admin-secondary));
 }
+
+/* =============================================
+   CABEÇALHO DO LOGIN
+   ============================================= */
 
 .login-header {
     text-align: center;
@@ -215,7 +251,10 @@ body.user-admin .login-header h2 {
     font-size: clamp(0.9rem, 3vw, 1rem);
 }
 
-/* Formulários de login */
+/* =============================================
+   FORMULÁRIOS E CONTROLES
+   ============================================= */
+
 #loginForm {
     margin-bottom: 25px;
 }
@@ -242,6 +281,7 @@ body.user-admin .form-group label {
     color: var(--admin-secondary);
 }
 
+/* Ícones nos inputs */
 .input-icon {
     position: absolute;
     left: 5%;
@@ -267,22 +307,12 @@ body.user-admin .form-group label {
     outline: none;
 }
 
-/*
-body.user-coordinator .form-group input:focus {
-    border-color: var(--coordinator-primary);
-    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
-}
-
-body.user-admin .form-group input:focus {
-    border-color: var(--admin-primary);
-    box-shadow: 0 0 0 3px rgba(111, 66, 193, 0.2);
-}*/
-
 .form-group input::placeholder {
     color: var(--medium-gray);
     font-size: clamp(0.85rem, 3vw, 0.95rem);
 }
 
+/* Alternar visibilidade da senha */
 .password-toggle {
     position: absolute;
     right: 5%;
@@ -305,6 +335,10 @@ body.user-admin .password-toggle:hover {
     color: var(--admin-secondary);
 }
 
+/* =============================================
+   BOTÕES PRINCIPAIS
+   ============================================= */
+
 .login-btn {
     width: 100%;
     padding: clamp(0.75rem, 3vw, 0.875rem);
@@ -325,13 +359,11 @@ body.user-admin .password-toggle:hover {
 
 body.user-coordinator .login-btn {
     background: linear-gradient(to right, var(--coordinator-primary), var(--coordinator-secondary));
-    /* box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3); */
     box-shadow: 0 5px 15px rgba(243, 115, 33, 0.3);
 }
 
 body.user-admin .login-btn {
     background: linear-gradient(to right, var(--admin-primary), var(--admin-secondary));
-    /* box-shadow: 0 5px 15px rgba(111, 66, 193, 0.3); */
     box-shadow: 0 5px 15px rgba(243, 115, 33, 0.3);
 }
 
@@ -343,13 +375,11 @@ body.user-admin .login-btn {
 
 body.user-coordinator .login-btn:hover {
     background: linear-gradient(to right, var(--coordinator-primary-dark), var(--coordinator-secondary-dark));
-    /*box-shadow: 0 7px 20px rgba(40, 167, 69, 0.4);*/
     box-shadow: 0 7px 20px rgba(243, 115, 33, 0.4);
 }
 
 body.user-admin .login-btn:hover {
     background: linear-gradient(to right, var(--admin-primary-dark), var(--admin-secondary-dark));
-    /*box-shadow: 0 7px 20px rgba(111, 66, 193, 0.4);*/
     box-shadow: 0 7px 20px rgba(243, 115, 33, 0.4);
 }
 
@@ -357,6 +387,7 @@ body.user-admin .login-btn:hover {
     transform: translateY(1px);
 }
 
+/* Efeito de onda no hover do botão */
 .login-btn::after {
     content: '';
     position: absolute;
@@ -372,6 +403,10 @@ body.user-admin .login-btn:hover {
 .login-btn:hover::after {
     transform: translateX(100%);
 }
+
+/* =============================================
+   MENSAGENS DO SISTEMA
+   ============================================= */
 
 .message {
     padding: 12px 15px;
@@ -399,6 +434,10 @@ body.user-admin .login-btn:hover {
     color: #2e7d32;
     border: 1px solid #c8e6c9;
 }
+
+/* =============================================
+   LINKS E RODAPÉ DO LOGIN
+   ============================================= */
 
 .login-links {
     text-align: center;
@@ -449,7 +488,10 @@ body.user-admin .login-btn:hover {
     font-size: clamp(0.8rem, 3vw, 0.9rem);
 }
 
-/* Tela Principal */
+/* =============================================
+   TELA PRINCIPAL DO USUÁRIO
+   ============================================= */
+
 .user-screen {
     display: none;
     width: 100%;
@@ -462,7 +504,10 @@ body.user-admin .login-btn:hover {
     position: relative;
 }
 
-/* Cabeçalhos por tipo de usuário */
+/* =============================================
+   CABEÇALHOS POR TIPO DE USUÁRIO
+   ============================================= */
+
 .main-header {
     color: white;
     padding: 20px 30px;
@@ -471,7 +516,6 @@ body.user-admin .login-btn:hover {
     align-items: center;
     position: relative;
     width: 100%;
-    padding: 20px 30px;
 }
 
 .main-header::after {
@@ -483,7 +527,7 @@ body.user-admin .login-btn:hover {
     height: 4px;
 }
 
-/* Cabeçalho do estudante (tema original) */
+/* Estudante */
 .student-header {
     background: linear-gradient(to right, var(--student-secondary), var(--student-secondary-dark));
 }
@@ -492,7 +536,7 @@ body.user-admin .login-btn:hover {
     background: linear-gradient(to right, var(--student-primary), var(--student-primary-light));
 }
 
-/* Cabeçalho do coordenador (tema verde) */
+/* Coordenador */
 .coordinator-header {
     background: linear-gradient(to right, var(--coordinator-secondary), var(--coordinator-secondary-dark));
 }
@@ -501,7 +545,7 @@ body.user-admin .login-btn:hover {
     background: linear-gradient(to right, var(--coordinator-primary), var(--coordinator-primary-light));
 }
 
-/* Cabeçalho do administrador (tema roxo) */
+/* Administrador */
 .admin-header {
     background: linear-gradient(to right, var(--admin-secondary), var(--admin-secondary-dark));
 }
@@ -509,6 +553,10 @@ body.user-admin .login-btn:hover {
 .admin-header::after {
     background: linear-gradient(to right, var(--admin-primary), var(--admin-primary-light));
 }
+
+/* =============================================
+   INFORMAÇÕES DO USUÁRIO
+   ============================================= */
 
 .user-info {
     display: flex;
@@ -554,6 +602,10 @@ body.user-admin .login-btn:hover {
     opacity: 0.8;
 }
 
+/* =============================================
+   BOTÕES DO CABEÇALHO
+   ============================================= */
+
 .header-buttons {
     display: flex;
     gap: 10px;
@@ -589,18 +641,10 @@ body.user-admin .login-btn:hover {
     background: rgba(243, 115, 33, 1);
 }
 
+/* =============================================
+   SISTEMA DE ABAS
+   ============================================= */
 
-/*
-body.user-coordinator .header-btn.logout:hover {
-    background: rgba(40, 167, 69, 1);
-}
-
-body.user-admin .header-btn.logout:hover {
-    background: rgba(111, 66, 193, 1);
-}
-*/
-
-/* Container de abas */
 .tabs-container {
     background: var(--off-white);
     padding: 0 clamp(1rem, 3vw, 1.875rem);
@@ -650,6 +694,7 @@ body.user-admin .header-btn.logout:hover {
     color: var(--admin-secondary);
 }
 
+/* Indicador de aba ativa */
 .tab.active::after {
     content: '';
     position: absolute;
@@ -671,7 +716,10 @@ body.user-admin .header-btn.logout:hover {
     background: var(--admin-primary);
 }
 
-/* Conteúdo das abas */
+/* =============================================
+   CONTEÚDO DAS ABAS
+   ============================================= */
+
 .tab-content-container {
     flex: 1;
     overflow: auto;
@@ -686,7 +734,10 @@ body.user-admin .header-btn.logout:hover {
     display: block;
 }
 
-/* Containers de formulário (comuns) */
+/* =============================================
+   FORMULÁRIOS E CONTAINERS
+   ============================================= */
+
 .form-container {
     background: white;
     border-radius: var(--border-radius);
@@ -718,11 +769,9 @@ body.user-admin .header-btn.logout:hover {
     color: var(--admin-secondary);
 }
 
-.chart-container {
-    position: relative;
-    height: 300px;
-    min-height: 300px;
-}
+/* =============================================
+   LAYOUT EM GRID PARA FORMULÁRIOS
+   ============================================= */
 
 .form-grid {
     display: grid;
@@ -757,7 +806,7 @@ body.user-admin .header-btn.logout:hover {
 .form-group-main select,
 .form-group-main input {
     width: 100%;
-    padding: 12px;
+    padding: clamp(0.75rem, 2vw, 0.875rem);
     border: 2px solid var(--light-gray);
     border-radius: var(--border-radius);
     font-family: var(--font);
@@ -781,199 +830,14 @@ body.user-admin .header-btn.logout:hover {
     border-color: var(--coordinator-primary);
 }
 
-/* Modal Styles */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.5);
-}
-
-.modal-content {
-    background-color: #fefefe;
-    margin: 5% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    border-radius: var(--border-radius);
-    width: 80%;
-    max-width: 600px;
-    position: relative;
-}
-
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    position: absolute;
-    right: 15px;
-    top: 10px;
-}
-
-.close:hover,
-.close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-}
-
-/* Estilos para a barra de progresso */
-.progress-bar-container {
-    width: 100%;
-    height: 20px;
-    background-color: #f0f0f0;
-    border-radius: 10px;
-    overflow: hidden;
-    margin-bottom: 5px;
-}
-
-.progress-bar-fill {
-    height: 100%;
-    background: linear-gradient(to right, var(--student-primary), var(--student-primary-dark));
-    border-radius: 10px;
-    transition: width 0.3s ease;
-}
-
-/* Ajustes para os botões de ação */
-.user-actions {
-    display: flex;
-    gap: 10px;
-}
-
-.btn-icon {
-    padding: 8px 12px;
-    border: none;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 14px;
-}
-
-.btn-edit {
-    background-color: var(--warning);
-    color: black;
-}
-
-.btn-edit:hover {
-    background-color: #e0a800;
-}
-
-.btn-delete {
-    background-color: var(--danger);
-    color: white;
-}
-
-.btn-delete:hover {
-    background-color: var(--dark-danger);
-}
-
-.btn-view {
-    background-color: var(--light-blue);
-    color: white;
-}
-
-.btn-view:hover {
-    background-color: var(--medium-blue);
-}
-
 .admin-only .form-group-main select:focus,
 .admin-only .form-group-main input:focus {
     border-color: var(--admin-primary);
 }
 
-.info-icon {
-    position: absolute;
-    right: 2%;
-    top: 42%;
-    cursor: help;
-    font-size: clamp(0.9rem, 2.5vw, 1rem);
-}
-
-.student-only .info-icon {
-    color: var(--student-secondary);
-}
-
-.coordinator-only .info-icon {
-    color: var(--coordinator-secondary);
-}
-
-.admin-only .info-icon {
-    color: var(--admin-secondary);
-}
-
-.file-info {
-    font-size: 12px;
-    margin-top: 5px;
-    color: var(--dark-gray);
-    font-style: italic;
-}
-
-.file-info a {
-    color: var(--light-blue);
-    text-decoration: none;
-}
-
-.file-info a:hover {
-    text-decoration: underline;
-}
-
-.info-tooltip {
-    position: absolute;
-    background: var(--dark-blue);
-    color: white;
-    padding: 8px 12px;
-    border-radius: var(--border-radius);
-    font-size: clamp(0.8rem, 2.5vw, 0.9rem);
-    z-index: 100;
-    width: clamp(200px, 30vw, 250px);
-    right: 0;
-    top: 65px;
-    display: none;
-}
-
-.info-icon:hover+.info-tooltip {
-    display: block;
-}
-
-.form-group-main input,
-.form-group-main select {
-    width: 100%;
-    padding: clamp(0.75rem, 2vw, 0.875rem) clamp(0.75rem, 2vw, 0.875rem);
-    border: 2px solid var(--light-gray);
-    border-radius: var(--border-radius);
-    font-family: var(--font);
-    font-size: clamp(0.9rem, 2.5vw, 1rem);
-    transition: all var(--transition);
-    min-height: 44px;
-}
-
-.form-group-main input:focus,
-.form-group-main select:focus {
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
-    outline: none;
-}
-
-.student-only .form-group-main input:focus,
-.student-only .form-group-main select:focus {
-    border-color: var(--student-primary);
-}
-
-.coordinator-only .form-group-main input:focus,
-.coordinator-only .form-group-main select:focus {
-    border-color: var(--coordinator-primary);
-}
-
-.admin-only .form-group-main input:focus,
-.admin-only .form-group-main select:focus {
-    border-color: var(--admin-primary);
-}
+/* =============================================
+   BOTÕES DE AÇÃO EM FORMULÁRIOS
+   ============================================= */
 
 .form-actions {
     display: flex;
@@ -1036,7 +900,10 @@ body.user-admin .header-btn.logout:hover {
     color: white;
 }
 
-/* Para a tabela */
+/* =============================================
+   TABELAS
+   ============================================= */
+
 .table-container {
     overflow: auto;
     max-height: 500px;
@@ -1045,7 +912,14 @@ body.user-admin .header-btn.logout:hover {
     margin-top: clamp(1rem, 2vw, 1.25rem);
 }
 
-/* cabeçalho (sticky) */
+.activities-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+/* Cabeçalho fixo da tabela */
 .activities-table thead th {
     position: sticky;
     top: 0;
@@ -1071,21 +945,12 @@ body.user-admin .header-btn.logout:hover {
     background: linear-gradient(to right, var(--admin-secondary), var(--admin-secondary-dark));
 }
 
-/* tabela em si */
-.activities-table {
-    width: 100%;
-    table-layout: fixed;
-    border-collapse: collapse;
-    min-width: 800px;
-}
-
-/* células */
-.activities-table th {
+/* Células da tabela */
+.activities-table th,
+.activities-table td {
     white-space: nowrap;
-    /* Impede a quebra de texto */
     overflow: hidden;
     text-overflow: ellipsis;
-    /* Adiciona "..." quando o texto é muito longo */
     text-align: center;
     vertical-align: middle;
     padding: 0.75rem 1rem;
@@ -1096,17 +961,9 @@ body.user-admin .header-btn.logout:hover {
 
 .activities-table td {
     white-space: normal;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    text-align: center;
-    vertical-align: middle;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--light-gray);
-    color: var(--dark-gray);
-    font-size: 0.9rem;
 }
 
-/* linhas listradas e hover */
+/* Linhas listradas e efeito hover */
 .activities-table tr:nth-child(even) {
     background: var(--off-white);
 }
@@ -1127,19 +984,7 @@ body.user-admin .header-btn.logout:hover {
     background: rgba(111, 66, 193, 0.05);
 }
 
-.activities-table .resizer {
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 8px;
-    height: 100%;
-    cursor: col-resize;
-    user-select: none;
-    touch-action: none;
-    z-index: 60;
-}
-
-/* pequenas larguras mínimas */
+/* Larguras mínimas para colunas específicas */
 .activities-table th:nth-child(6),
 .activities-table th:nth-child(7),
 .activities-table th:nth-child(8) {
@@ -1150,7 +995,10 @@ body.user-admin .header-btn.logout:hover {
     min-width: 140px;
 }
 
-/* Botões de ação */
+/* =============================================
+   BOTÕES DE AÇÃO EM TABELAS
+   ============================================= */
+
 .action-btn {
     background: transparent;
     border: none;
@@ -1201,48 +1049,10 @@ body.user-admin .header-btn.logout:hover {
     background: transparent;
 }
 
-/* Botões para coordenador */
-.btn-icon {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 8px 12px;
-    border-radius: var(--border-radius);
-    font-size: 0.9rem;
-    transition: all var(--transition);
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-}
+/* =============================================
+   RESUMO DE HORAS E PROGRESSO
+   ============================================= */
 
-.btn-view {
-    background-color: var(--light-blue);
-    color: white;
-}
-
-.btn-view:hover {
-    background-color: var(--medium-blue);
-}
-
-.btn-edit {
-    background-color: var(--warning);
-    color: black;
-}
-
-.btn-edit:hover {
-    background-color: #e0a800;
-}
-
-.btn-delete {
-    background-color: var(--danger);
-    color: white;
-}
-
-.btn-delete:hover {
-    background-color: var(--dark-danger);
-}
-
-/* Resumo de horas */
 .hours-summary {
     background: white;
     border-radius: var(--border-radius);
@@ -1270,7 +1080,6 @@ body.user-admin .header-btn.logout:hover {
     font-size: clamp(1.25rem, 4vw, 1.75rem);
     font-weight: 700;
     margin-bottom: 5px;
-    color: var(--coordinator-secondary);
 }
 
 .student-only .summary-value {
@@ -1290,39 +1099,119 @@ body.user-admin .header-btn.logout:hover {
     font-size: clamp(0.75rem, 2.5vw, 0.875rem);
 }
 
-/* Ajustes para a tabela de atividades do estudante */
-#atividades-estudante .table-container {
-    max-height: 400px;
+/* =============================================
+   BARRAS DE PROGRESSO
+   ============================================= */
+
+.progress-container {
+    margin-top: clamp(1rem, 2vw, 1.25rem);
 }
 
-/* Estilo para o resumo do estudante */
-#atividades-estudante .progress-container {
-    margin-top: 20px;
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--dark-gray);
+    font-size: clamp(0.85rem, 2.5vw, 0.95rem);
 }
 
-#atividades-estudante .progress-bar {
-    height: 20px;
-    background-color: #e9ecef;
-    border-radius: 5px;
+.progress-bar {
+    height: clamp(16px, 3vw, 20px);
+    background: #e9ecef;
+    border-radius: 10px;
     overflow: hidden;
 }
 
-#atividades-estudante .progress-fill {
+.progress-fill {
     height: 100%;
-    border-radius: 5px;
-    background: linear-gradient(to right, var(--coordinator-primary), var(--coordinator-primary-dark));
+    border-radius: 10px;
+    transition: width 0.5s ease;
 }
 
-#atividades-estudante .progress-fill {
-    height: 100%;
-    border-radius: 5px;
-    background: linear-gradient(to right, var(--coordinator-primary), var(--coordinator-primary-dark));
-}
-
-#atividades-estudante .progress-label {
-    display: flex;
-    justify-content: space-between;
+.progress-bar-container {
+    width: 100%;
+    height: 20px;
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    overflow: hidden;
     margin-bottom: 5px;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(to right, var(--student-primary), var(--student-primary-dark));
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+/* =============================================
+   COMPONENTES DE INTERFACE
+   ============================================= */
+
+/* Ícones de informação */
+.info-icon {
+    position: absolute;
+    right: 2%;
+    top: 42%;
+    cursor: help;
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+}
+
+.student-only .info-icon {
+    color: var(--student-secondary);
+}
+
+.coordinator-only .info-icon {
+    color: var(--coordinator-secondary);
+}
+
+.admin-only .info-icon {
+    color: var(--admin-secondary);
+}
+
+/* Tooltips */
+.info-tooltip {
+    position: absolute;
+    background: var(--dark-blue);
+    color: white;
+    padding: 8px 12px;
+    border-radius: var(--border-radius);
+    font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+    z-index: 100;
+    width: clamp(200px, 30vw, 250px);
+    right: 0;
+    top: 100%;
+    margin-top: 5px;
+    display: none;
+}
+
+.info-icon:hover+.info-tooltip {
+    display: block;
+}
+
+/* Badges de status */
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: clamp(0.75rem, 2.5vw, 0.875rem);
+    font-weight: 600;
+}
+
+.status-badge.approved {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-badge.pending {
+    background: var(--light-pending);
+    color: var(--dark-pending);
+    border: 1px solid var(--pending);
+}
+
+.status-badge.rejected {
+    background: #ffebee;
+    color: #c62828;
 }
 
 /* Mensagens do sistema */
@@ -1366,62 +1255,6 @@ body.user-admin .header-btn.logout:hover {
     border: 1px solid #ffeeba;
 }
 
-.invalid {
-    border-color: #ff4444 !important;
-    box-shadow: 0 0 5px rgba(255, 68, 68, 0.5) !important;
-}
-
-/* Badges de status */
-.status-badge {
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-size: clamp(0.75rem, 2.5vw, 0.875rem);
-    font-weight: 600;
-}
-
-.status-badge.approved {
-    background: #e8f5e9;
-    color: #2e7d32;
-}
-
-.status-badge.pending {
-    background: var(--light-pending);
-    color: var(--dark-pending);
-    border: 1px solid var(--pending);
-}
-
-.status-badge.rejected {
-    background: #ffebee;
-    color: #c62828;
-}
-
-/* Barras de progresso */
-.progress-container {
-    margin-top: clamp(1rem, 2vw, 1.25rem);
-}
-
-.progress-label {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: var(--dark-gray);
-    font-size: clamp(0.85rem, 2.5vw, 0.95rem);
-}
-
-.progress-bar {
-    height: clamp(16px, 3vw, 20px);
-    background: #e9ecef;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    border-radius: 10px;
-    transition: width 0.5s ease;
-}
-
 /* Tags de restrição */
 .restriction-tag {
     display: inline-block;
@@ -1444,7 +1277,350 @@ body.user-admin .header-btn.logout:hover {
     border: 1px solid #c8e6c9;
 }
 
-/* Gestão de usuários */
+/* =============================================
+   MODAIS
+   ============================================= */
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    border-radius: var(--border-radius);
+    width: 80%;
+    max-width: 600px;
+    position: relative;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute;
+    right: 15px;
+    top: 10px;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Modal de preview do comprovante */
+.modal-content-preview {
+    background: white;
+    width: 90%;
+    max-width: 900px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header,
+.preview-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--light-gray);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--off-white);
+    border-radius: 8px 8px 0 0;
+}
+
+.modal-header h2 {
+    color: var(--dark-blue);
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.modal-body,
+.preview-body {
+    flex: 1;
+    padding: 20px;
+    overflow: auto;
+    background: white;
+}
+
+.modal-body iframe {
+    border: 1px solid var(--light-gray);
+    border-radius: 4px;
+    width: 100%;
+}
+
+.modal-footer,
+.preview-footer {
+    padding: 20px;
+    border-top: 1px solid var(--light-gray);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    background: var(--off-white);
+    border-radius: 0 0 8px 8px;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--dark-gray);
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color var(--transition);
+}
+
+.btn-close:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: var(--dark-blue);
+}
+
+/* =============================================
+   COMPONENTES DE SELEÇÃO PERSONALIZADA
+   ============================================= */
+
+.searchable-select-wrapper {
+    position: relative;
+    width: 100%;
+    margin-bottom: clamp(0.75rem, 2vw, 0.9375rem);
+    min-width: 0;
+}
+
+.form-group-main .searchable-select-wrapper {
+    margin-bottom: 0;
+}
+
+.custom-select-edicao,
+.custom-select {
+    width: 100%;
+    padding: clamp(0.75rem, 2vw, 0.875rem) 35px clamp(0.75rem, 2vw, 0.875rem) clamp(0.75rem, 2vw, 0.875rem);
+    border: 2px solid var(--light-gray);
+    border-radius: var(--border-radius);
+    background: white;
+    cursor: pointer;
+    position: relative;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    color: var(--dark-gray);
+    transition: all var(--transition);
+    min-width: 0;
+}
+
+.custom-select-edicao:hover,
+.custom-select:hover {
+    border-color: var(--medium-gray);
+}
+
+.custom-select-edicao.active,
+.custom-select.active {
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px rgba(243, 115, 33, 0.2);
+}
+
+.select-text-edicao,
+.select-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.select-search-integrated-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--dark-blue);
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    pointer-events: none;
+}
+
+.select-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: none;
+    max-height: 300px;
+    overflow: hidden;
+    min-width: 0;
+}
+
+.dropdown-search-input {
+    width: 100%;
+    padding: 8px 10px;
+    border: none;
+    border-bottom: 1px solid #eee;
+    outline: none;
+    box-sizing: border-box;
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+}
+
+.dropdown-search-input:focus {
+    border-bottom-color: #4d90fe;
+}
+
+.select-options {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.select-option {
+    padding: 8px 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    overflow: hidden;
+}
+
+.select-option:hover {
+    background-color: #f5f5f5;
+}
+
+.select-option:last-child {
+    border-bottom: none;
+}
+
+.select-options .no-results {
+    padding: 10px;
+    color: #999;
+    text-align: center;
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+}
+
+.hidden-original {
+    display: none !important;
+    position: absolute !important;
+    left: -9999px !important;
+}
+
+/* =============================================
+   CONTAINERS DE INPUT COM ÍCONES
+   ============================================= */
+
+.input-container {
+    position: relative;
+    width: 100%;
+}
+
+.input-container .info-icon {
+    position: absolute;
+    right: 4%;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: help;
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    color: var(--dark-gray);
+    transition: color var(--transition);
+    z-index: 2;
+}
+
+.input-container input {
+    width: 100%;
+    padding: clamp(0.75rem, 2vw, 0.875rem) 45px clamp(0.75rem, 2vw, 0.875rem) clamp(0.75rem, 2vw, 0.875rem);
+    border: 2px solid var(--light-gray);
+    border-radius: var(--border-radius);
+    font-family: var(--font);
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    transition: all var(--transition);
+    min-height: 44px;
+}
+
+.input-container input:focus {
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px rgba(243, 115, 33, 0.2);
+    outline: none;
+}
+
+/* Tooltip posicionado corretamente em relação ao ícone */
+.input-container .info-tooltip {
+    position: absolute;
+    background: var(--dark-blue);
+    color: white;
+    padding: 8px 12px;
+    border-radius: var(--border-radius);
+    font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+    z-index: 100;
+    width: clamp(200px, 30vw, 250px);
+    right: 0;
+    top: 100%;
+    margin-top: 8px;
+    display: none;
+}
+
+.input-container .info-icon:hover+.info-tooltip {
+    display: block;
+}
+
+.input-container:hover .info-tooltip {
+    display: block;
+}
+
+/* Cores do ícone por tipo de usuário */
+.student-only .input-container .info-icon {
+    color: var(--student-secondary);
+}
+
+.coordinator-only .input-container .info-icon {
+    color: var(--coordinator-secondary);
+}
+
+.admin-only .input-container .info-icon {
+    color: var(--admin-secondary);
+}
+
+/* Efeito hover no ícone */
+.input-container .info-icon:hover {
+    color: var(--orange);
+}
+
+/* =============================================
+   GESTÃO DE USUÁRIOS
+   ============================================= */
+
 .user-management {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -1477,12 +1653,156 @@ body.user-admin .header-btn.logout:hover {
     font-size: 0.9rem;
 }
 
+/* =============================================
+   BOTÕES DE AÇÃO PARA COORDENADORES E ADMINS
+   ============================================= */
+
 .user-actions {
     display: flex;
     gap: 10px;
+    align-items: center;
 }
 
-/* Classes para controle de exibição por tipo de usuário */
+/* Botões de ícone (edit, delete, view) */
+.btn-icon {
+    padding: 8px 12px;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all var(--transition);
+    text-decoration: none;
+    min-height: 36px;
+}
+
+/* Botão de visualizar */
+.btn-view {
+    background-color: var(--light-blue);
+    color: white;
+}
+
+.btn-view:hover {
+    background-color: var(--medium-blue);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Botão de editar */
+.btn-edit {
+    background-color: var(--warning);
+    color: black;
+}
+
+.btn-edit:hover {
+    background-color: #e0a800;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Botão de deletar */
+.btn-delete {
+    background-color: var(--danger);
+    color: white;
+}
+
+.btn-delete:hover {
+    background-color: var(--dark-danger);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Container para botões em coluna (usado na avaliação) */
+.user-actions>div {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Versões menores dos botões (apenas ícone) */
+.user-actions .btn-icon:has(i:only-of-type) {
+    padding: 8px;
+    min-width: 36px;
+    justify-content: center;
+}
+
+/* Efeitos de hover específicos para os botões menores */
+.user-actions .btn-icon:has(i:only-of-type):hover {
+    transform: scale(1.05);
+}
+
+/* Garantir que os ícones tenham tamanho consistente */
+.btn-icon i {
+    font-size: 14px;
+    width: 16px;
+    text-align: center;
+}
+
+/* Estados de foco para acessibilidade */
+.btn-icon:focus {
+    outline: 2px solid var(--dark-blue);
+    outline-offset: 2px;
+}
+
+/* =============================================
+   ESTILOS ESPECÍFICOS PARA TABELAS
+   ============================================= */
+
+/* Garantir que as ações nas tabelas tenham espaçamento adequado */
+.activities-table .user-actions {
+    justify-content: center;
+    flex-wrap: nowrap;
+}
+
+.activities-table .btn-icon {
+    font-size: 12px;
+    padding: 6px 10px;
+    min-height: 32px;
+}
+
+.activities-table .btn-icon i {
+    font-size: 12px;
+}
+
+/* =============================================
+   RESPONSIVIDADE PARA BOTÕES DE AÇÃO
+   ============================================= */
+
+@media (max-width: 768px) {
+    .user-actions {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .btn-icon {
+        font-size: 12px;
+        padding: 6px 10px;
+        min-height: 32px;
+    }
+
+    .btn-icon i {
+        font-size: 12px;
+    }
+
+    /* Em mobile, botões com texto ficam em coluna */
+    .user-actions:has(.btn-icon:not(:has(i:only-of-type))) {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .user-actions:has(.btn-icon:not(:has(i:only-of-type))) .btn-icon {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* =============================================
+   CONTROLE DE VISIBILIDADE POR TIPO DE USUÁRIO
+   ============================================= */
+
 .student-only,
 .coordinator-only,
 .admin-only {
@@ -1498,7 +1818,62 @@ body.user-admin .admin-only {
     align-content: center;
 }
 
-/* Ajustes responsivos */
+/* =============================================
+   ANIMAÇÕES
+   ============================================= */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.login-container,
+.user-screen {
+    animation: fadeIn 0.6s ease-out forwards;
+}
+
+/* =============================================
+   ESTADOS E UTILITÁRIOS
+   ============================================= */
+
+.invalid {
+    border-color: #ff4444 !important;
+    box-shadow: 0 0 5px rgba(255, 68, 68, 0.5) !important;
+}
+
+.file-info {
+    font-size: 12px;
+    margin-top: 5px;
+    color: var(--dark-gray);
+    font-style: italic;
+}
+
+.file-info a {
+    color: var(--light-blue);
+    text-decoration: none;
+}
+
+.file-info a:hover {
+    text-decoration: underline;
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    min-height: 300px;
+}
+
+/* =============================================
+   RESPONSIVIDADE
+   ============================================= */
+
 @media (max-width: 992px) {
     .main-header {
         flex-direction: column;
@@ -1706,10 +2081,6 @@ body.user-admin .admin-only {
         font-size: 14px;
     }
 
-    .divider span {
-        font-size: 13px;
-    }
-
     .link-item {
         font-size: 14px;
     }
@@ -1728,21 +2099,4 @@ body.user-admin .admin-only {
     .user-actions {
         justify-content: center;
     }
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.login-container,
-.user-screen {
-    animation: fadeIn 0.6s ease-out forwards;
 }

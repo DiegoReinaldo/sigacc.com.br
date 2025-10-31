@@ -1,13 +1,14 @@
 // =============================================
-// CONSTANTES E CONFIGURAÇÕES (mantidas conforme solicitado)
+// CONSTANTES E CONFIGURAÇÕES
 // =============================================
-const HORAS_NECESSARIAS = 225;
-const CURSO_DE_GRADUACAO = 'Engenharia de Produção Bacharelado UEMA, Campus São Luis';
+const cursoDeGraducao = 'Engenharia de Produção Bacharelado UEMA, Campus São Luis';
 const ADMIN_USER = {
     username: 'admin',
     password: 'admin',
-    matricula: '00000000001'
+    matricula: '20080000001'
 };
+
+const horasNecessariasCurso = 225;
 
 // Grupos e tipos de atividades
 const gruposAtividades = [
@@ -1084,9 +1085,9 @@ function validarMatricula(matricula) {
     // Verifica o ano atual
     const anoAtual = new Date().getFullYear();
 
-    // Os 4 primeiros dígitos devem ser um ano entre 2000 e ano atual
+    // Os 4 primeiros dígitos devem ser um ano entre 2008 e ano atual
     const ano = parseInt(matricula.substring(0, 4), 10);
-    return ano >= 2000 && ano <= anoAtual;
+    return ano >= 2008 && ano <= anoAtual;
 }
 
 /**
@@ -1327,23 +1328,30 @@ function initFormListeners() {
     }
 
     // Formulários do estudante
+    // Formulários do estudante
     const formCadastro = getElementSafe("formCadastro");
     const formFiltro = getElementSafe("formFiltro");
     const formEdicao = getElementSafe("formEdicao");
     const limparCadastroBtn = getElementSafe("limparCadastroBtn");
     const limparFiltrosBtn = getElementSafe("limparFiltrosBtn");
+    const cancelarEdicaoBtn = getElementSafe("cancelarEdicaoBtn");
     const imprimirBtn = getElementSafe("imprimirBtn");
     const studentExportBtn = getElementSafe("studentExportBtn");
     const studentImportBtn = getElementSafe("studentImportBtn");
-    const formEdicaoCoordenador = document.getElementById("formEdicaoCoordenador");
-    const formEdicaoEstudante = document.getElementById("formEdicaoEstudante");
 
     if (formCadastro) formCadastro.addEventListener("submit", handleCadastroSubmit);
     if (formFiltro) formFiltro.addEventListener("submit", handleFiltroSubmit);
     if (formEdicao) formEdicao.addEventListener("submit", handleEdicaoSubmit);
     if (limparCadastroBtn) limparCadastroBtn.addEventListener("click", limparCadastro);
     if (limparFiltrosBtn) limparFiltrosBtn.addEventListener("click", limparFiltros);
-    if (imprimirBtn) imprimirBtn.addEventListener("click", handleImprimir);
+    if (cancelarEdicaoBtn) cancelarEdicaoBtn.addEventListener("click", limparEdicaoAtividadeEstudante);
+
+    // CORREÇÃO: Garantir que o event listener está correto
+    if (imprimirBtn) {
+        imprimirBtn.removeEventListener("click", handleImprimir); // Remover existente para evitar duplicação
+        imprimirBtn.addEventListener("click", handleImprimir);
+    }
+
     if (studentExportBtn) studentExportBtn.addEventListener("click", exportarDados);
     if (studentImportBtn) studentImportBtn.addEventListener("click", importarDados);
 
@@ -1724,7 +1732,7 @@ function handleCadastroEstudante(e) {
     // VALIDAÇÃO DA MATRÍCULA
     if (!validarMatricula(matricula)) {
         const anoAtual = new Date().getFullYear();
-        showSystemMessage(`Matrícula inválida. Deve ter 11 dígitos e o ano de ingresso entre 2000 e o ${anoAtual}.`, "error");
+        showSystemMessage(`Matrícula inválida. Deve ter 11 dígitos e o ano de ingresso entre 2008 e o ${anoAtual}.`, "error");
         return;
     }
 
@@ -2024,6 +2032,50 @@ function limparEdicaoEstudante() {
     fecharModalEdicaoEstudante();
 }
 
+
+/**
+ * Limpa o formulário de edição de atividade do estudante
+ */
+function limparEdicaoAtividadeEstudante() {
+    const form = getElementSafe("formEdicao");
+    if (form) form.reset();
+
+    const comprovanteAtualInfo = getElementSafe("comprovanteAtualInfo");
+    if (comprovanteAtualInfo) comprovanteAtualInfo.textContent = "";
+
+    // Resetar os componentes personalizados dos selects
+    const selects = ['tipoEdicao'];
+
+    selects.forEach(selectId => {
+        const originalSelect = document.getElementById(selectId);
+        if (!originalSelect) return;
+
+        // Resetar o select original
+        originalSelect.value = "";
+
+        // Atualizar o componente personalizado
+        const wrapper = originalSelect.previousElementSibling;
+        if (wrapper && wrapper.classList.contains('searchable-select-wrapper')) {
+            const selectText = wrapper.querySelector('.select-text-edicao');
+            if (selectText) {
+                selectText.textContent = "Selecione uma opção";
+            }
+
+            // Fechar dropdown se estiver aberto
+            const dropdown = wrapper.querySelector('.select-dropdown');
+            if (dropdown) {
+                dropdown.style.display = 'none';
+            }
+
+            // Limpar campo de pesquisa
+            const searchInput = wrapper.querySelector('.dropdown-search-input');
+            if (searchInput) {
+                searchInput.value = '';
+            }
+        }
+    });
+}
+
 /**
  * Importa estudantes a partir de um arquivo ZIP
  */
@@ -2054,8 +2106,8 @@ function importarEstudanteZIP() {
             }
 
             const cursoImportado = linhas[0].split('�')[1];
-            if (cursoImportado !== CURSO_DE_GRADUACAO) {
-                throw new Error(`Arquivo incompatível! Este arquivo pertente ao curso: ${cursoImportado}. O sistema atual esá configurado para: ${CURSO_DE_GRADUACAO}.`);
+            if (cursoImportado !== cursoDeGraducao) {
+                throw new Error(`Arquivo incompatível! Este arquivo pertente ao curso: ${cursoImportado}. O sistema atual esá configurado para: ${cursoDeGraducao}.`);
             }
 
             // Extrair informações do estudante (segunda linha)
@@ -2117,7 +2169,7 @@ function importarEstudanteZIP() {
                         const periodoAtividade = campos[5];
                         if (!validarPeriodo(periodoAtividade, estudante.matricula)) {
                             console.warn(`Atividade na linha ${i} ignorada: período inválido`);
-                            continue; // Pula esta atividade, mas continua com as demais
+                            continue;
                         }
 
                         const novaAtividade = {
@@ -2125,9 +2177,9 @@ function importarEstudanteZIP() {
                             nome: campos[1],
                             tipo: campos[2],
                             horasRegistradas: parseFloat(campos[3]) || 0,
-                            horasValidadas: 0,
+                            horasValidadas: 0, // CORRIGIDO: Sempre 0 na importação
                             periodo: periodoAtividade,
-                            status: 'Pendente',
+                            status: 'Pendente', // CORRIGIDO: Sempre 'Pendente' na importação
                             comprovante: comprovantes[campos[0]] || null
                         };
 
@@ -2137,8 +2189,7 @@ function importarEstudanteZIP() {
                     }
                 }
 
-                showSystemMessage("Estudante e atividades importados com sucesso!", "success");
-                carregarEstudantes();
+                showSystemMessage("Estudante e atividades importados com sucesso! As atividades aguardam avaliação.", "success");
             };
 
         } catch (error) {
@@ -2192,9 +2243,9 @@ async function carregarTurma() {
                 totalEstudantesComHoras++;
             }
 
-            totalHorasValidadasTurma += Math.min(HORAS_NECESSARIAS, horasValidadas);
+            totalHorasValidadasTurma += Math.min(horasNecessariasCurso, horasValidadas);
 
-            const progresso = Math.min(100, (horasValidadas / HORAS_NECESSARIAS) * 100);
+            const progresso = Math.min(100, (horasValidadas / horasNecessariasCurso) * 100);
 
             const row = document.createElement("tr");
             row.innerHTML = `
@@ -2220,7 +2271,7 @@ async function carregarTurma() {
 
         // Calcular progresso médio da turma
         if (totalEstudantes > 0) {
-            progressoMedio = Math.min(100, Math.round((totalHorasValidadasTurma / (HORAS_NECESSARIAS * totalEstudantes)) * 100));
+            progressoMedio = Math.min(100, Math.round((totalHorasValidadasTurma / (horasNecessariasCurso * totalEstudantes)) * 100));
         } else {
             progressoMedio = 0;
         }
@@ -2255,7 +2306,7 @@ function atualizarKPIsTurma(totalEstudantes, estudantesComHoras, progressoMedio)
  * @param {number} totalHorasValidadas Total de horas validadas
  */
 function updateCoordinatorKPI(totalHorasValidadas) {
-    const needed = HORAS_NECESSARIAS || 225;
+    const needed = horasNecessariasCurso || 225;
     const percent = Math.min(100, Math.round((totalHorasValidadas / needed) * 100));
     const el = document.getElementById('updatecoordinatorKPI');
     if (el) el.textContent = percent + '%';
@@ -2361,9 +2412,25 @@ async function carregarAtividadesEstudante(usuarioEstudante, tentativas = 0) {
                 <td>${atividade.periodo}</td>
                 <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                 <td style="text-align: center;">
-                    <button class="action-btn download" onclick="baixarComprovante(${atividade.id})" ${!atividade.comprovante ? 'disabled' : ''}>
+                    <button class="action-btn download" onclick="visualizarComprovante(${atividade.id})" ${!atividade.comprovante ? 'disabled' : ''}>
                         <i class="fas fa-download"></i>
                     </button>
+                    <!-- Modal para Preview do Comprovante -->
+                    <div id="previewComprovanteOverlay" class="modal-overlay" style="display: none;">
+                        <div class="modal-content-preview">
+                            <div class="modal-header">
+                                <h2>Visualizar Comprovante</h2>
+                                <span class="btn-close" onclick="fecharPreviewComprovante()">&times;</span>
+                            </div>
+                            <div class="modal-body">
+                                <iframe id="previewComprovanteIframe" width="100%" height="800px"></iframe>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="form-btn secondary" onclick="fecharPreviewComprovante()">Fechar</button>
+                                <button class="form-btn primary" onclick="baixarComprovanteAtual()">Baixar Comprovante</button>
+                            </div>
+                        </div>
+                    </div>
                 </td>
                 <td>
                     <div style="display: inline-flex; flex-direction: column; gap: 10px;">
@@ -2474,6 +2541,9 @@ async function avaliarAtividade(id, status) {
 async function calcularHorasValidadas(tipo, horasSolicitadas, periodo, comprovante, excludeId, usuario) {
     if (comprovante == null) return 0;
 
+    // Se horas = 0, retorne 0
+    if (horasSolicitadas === 0) return 0;
+
     // 1. Verificação de limite do grupo
     const grupo = obterGrupoPorTipo(tipo);
     if (grupo) {
@@ -2495,7 +2565,7 @@ async function calcularHorasValidadas(tipo, horasSolicitadas, periodo, comprovan
         limiteEspecifico = configAtividades[tipo].maxHorasValidadas;
     }
 
-    return Math.min(horasSolicitadas, limiteEspecifico, disponibilidadeGlobal);
+    return Math.min(limiteEspecifico, disponibilidadeGlobal);
 }
 
 /**
@@ -2659,7 +2729,7 @@ async function atualizarGraficoEstatisticas(atividades) {
     });
 
     const totalHorasValidadas = Object.values(horasPorGrupo).reduce((a, b) => a + b, 0);
-    const horasRestantes = Math.max(0, HORAS_NECESSARIAS - totalHorasValidadas);
+    const horasRestantes = Math.max(0, horasNecessariasCurso - totalHorasValidadas);
 
     const labels = [];
     const data = [];
@@ -2744,7 +2814,7 @@ async function atualizarGraficoEstatisticas(atividades) {
  * @param {number} totalHorasValidadas Total de horas validadas
  */
 function atualizarUIEstudante(totalHorasRegistradas, totalHorasValidadas) {
-    const progressoTotal = Math.min(100, Math.round((totalHorasValidadas / HORAS_NECESSARIAS) * 100));
+    const progressoTotal = Math.min(100, Math.round((totalHorasValidadas / horasNecessariasCurso) * 100));
 
     // Elementos de texto
     const resumoHorasRegistradasEstudante = getElementSafe('resumoHorasRegistradasEstudante');
@@ -2759,7 +2829,7 @@ function atualizarUIEstudante(totalHorasRegistradas, totalHorasValidadas) {
     if (resumoHorasRegistradasEstudante) resumoHorasRegistradasEstudante.textContent = totalHorasRegistradas;
     if (resumoHorasValidadasEstudante) resumoHorasValidadasEstudante.textContent = totalHorasValidadas;
     if (progressoTotalEstudante) progressoTotalEstudante.textContent = `${progressoTotal}%`;
-    if (horasValidadasEstudante) horasValidadasEstudante.textContent = `${totalHorasValidadas}/${HORAS_NECESSARIAS}`;
+    if (horasValidadasEstudante) horasValidadasEstudante.textContent = `${totalHorasValidadas}/${horasNecessariasCurso}`;
 
     if (progressoTotalFillEstudante) progressoTotalFillEstudante.style.width = `${progressoTotal}%`;
     if (horasValidadasFillEstudante) horasValidadasFillEstudante.style.width = `${progressoTotal}%`;
@@ -2875,54 +2945,18 @@ async function handleCadastroSubmit(e) {
     const periodo = periodoInput.value.trim();
     const comprovanteFile = comprovanteInput.files[0];
 
+    // VALIDAÇÃO: Verificar se foi selecionado um tipo válido
+    if (tipo === "padrao") {
+        showSystemMessage("Por favor, selecione um tipo de atividade válido", "error");
+        return;
+    }
+
     if (!nome || !tipo || isNaN(horas) || horas < 0 || !periodo) {
         showSystemMessage("Preencha todos os campos obrigatórios", "error");
         return;
     }
 
-    // VALIDAÇÃO DO PERÍODO
-    if (!validarPeriodo(periodo, currentUserData.matricula)) {
-        const anoAtual = new Date().getFullYear();
-        const anoIngresso = parseInt(currentUserData.matricula.substring(0, 4), 10);
-        showSystemMessage(`Período inválido. Formato esperado: AAAA.S (ex: 2025.1) com ano entre ${anoIngresso}-${anoAtual}`, "error");
-        return;
-    }
-
-    try {
-        let comprovanteArrayBuffer = null;
-        if (comprovanteFile) {
-            comprovanteArrayBuffer = await fileToArrayBuffer(comprovanteFile);
-        }
-
-        // SEMPRE definir status como Pendente para estudantes
-        const status = 'Pendente';
-        const horasValidadasEfetivas = 0; // Até que seja aprovado pelo coordenador
-
-        const novaAtividade = {
-            usuario: currentUser,
-            nome,
-            tipo,
-            horasRegistradas: horas,
-            horasValidadas: horasValidadasEfetivas,
-            periodo,
-            status: status,
-            comprovante: comprovanteArrayBuffer
-        };
-
-        const transaction = db.transaction("atividades", "readwrite");
-        const store = transaction.objectStore("atividades");
-        const request = store.add(novaAtividade);
-
-        request.onsuccess = function () {
-            showSystemMessage("Atividade cadastrada com sucesso! Aguarde avaliação do coordenador.", "success");
-            const form = getElementSafe("formCadastro");
-            if (form) form.reset();
-            atualizarTabela();
-            atualizarResumo();
-        };
-    } catch (error) {
-        showSystemMessage("Erro ao cadastrar atividade: " + error, "error");
-    }
+    // ... restante do código existente ...
 }
 
 /**
@@ -2930,7 +2964,7 @@ async function handleCadastroSubmit(e) {
  * @param {File} file Arquivo a ser convertido
  * @returns {Promise} Promise com o ArrayBuffer
  */
-function fileToArrayBuffer(file) {
+function arquivoParaArrayBuffer(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result);
@@ -2940,45 +2974,78 @@ function fileToArrayBuffer(file) {
 }
 
 /**
+ * Formata o tamanho do arquivo para exibição
+ */
+function formatarTamanhoDoArquivo(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+/**
  * Manipula a edição de uma atividade existente
  * @param {Event} e Evento de submit
  */
 async function handleEdicaoSubmit(e) {
     e.preventDefault();
 
-    const idEdicaoInput = getElementSafe("idEdicao");
-    const nomeEdicaoInput = getElementSafe("nomeEdicao");
-    const tipoEdicaoInput = getElementSafe("tipoEdicao");
-    const horasEdicaoInput = getElementSafe("horasEdicao");
-    const periodoEdicaoInput = getElementSafe("periodoEdicao");
-    const comprovanteEdicaoInput = getElementSafe("comprovanteEdicao");
-
-    if (!idEdicaoInput || !nomeEdicaoInput || !tipoEdicaoInput || !horasEdicaoInput || !periodoEdicaoInput || !comprovanteEdicaoInput) {
-        showSystemMessage("Elementos do formulário não encontrados", "error");
-        return;
-    }
-
-    const id = parseInt(idEdicaoInput.value);
-    const nome = nomeEdicaoInput.value.trim();
-    const tipoNovo = tipoEdicaoInput.value;
-    const horasNovas = parseFloat(horasEdicaoInput.value);
-    const periodoNovo = periodoEdicaoInput.value.trim();
-    const comprovanteFile = comprovanteEdicaoInput.files[0];
-
-    if (!nome || !tipoNovo || isNaN(horasNovas) || horasNovas < 0 || !periodoNovo) {
-        showSystemMessage("Preencha todos os campos obrigatórios", "error");
-        return;
-    }
-
-    // VALIDAÇÃO DO PERÍODO
-    if (!validarPeriodo(periodoNovo, currentUserData.matricula)) {
-        const anoAtual = new Date().getFullYear();
-        const anoIngresso = parseInt(currentUserData.matricula.substring(0, 4), 10);
-        showSystemMessage(`Período inválido. Formato esperado: AAAA.S (ex: 2025.1) com ano entre ${anoIngresso}-${anoAtual}`, "error");
-        return;
-    }
+    // Obter o botão e configurar estado de carregamento
+    const submitBtn = getElementSafe("submitEdicaoBtn");
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+    submitBtn.disabled = true;
 
     try {
+        // Coletar dados do formulário
+        const idEdicaoInput = getElementSafe("idEdicao");
+        const nomeEdicaoInput = getElementSafe("nomeEdicao");
+        const tipoEdicaoInput = getElementSafe("tipoEdicao");
+        const horasEdicaoInput = getElementSafe("horasEdicao");
+        const periodoEdicaoInput = getElementSafe("periodoEdicao");
+        const comprovanteEdicaoInput = getElementSafe("comprovanteEdicao");
+
+        if (!idEdicaoInput || !nomeEdicaoInput || !tipoEdicaoInput || !horasEdicaoInput || !periodoEdicaoInput || !comprovanteEdicaoInput) {
+            showSystemMessage("Elementos do formulário não encontrados", "error");
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
+
+        const id = parseInt(idEdicaoInput.value);
+        const nome = nomeEdicaoInput.value.trim();
+        const tipoNovo = tipoEdicaoInput.value;
+        const horasNovas = parseFloat(horasEdicaoInput.value);
+        const periodoNovo = periodoEdicaoInput.value.trim();
+        const comprovanteFile = comprovanteEdicaoInput.files[0];
+
+        // VALIDAÇÃO: Verificar se foi selecionado um tipo válido
+        if (tipoNovo === "padrao") {
+            showSystemMessage("Por favor, selecione um tipo de atividade válido", "error");
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
+
+        if (!nome || !tipoNovo || isNaN(horasNovas) || horasNovas < 0 || !periodoNovo) {
+            showSystemMessage("Preencha todos os campos obrigatórios", "error");
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
+
+        // VALIDAÇÃO DO PERÍODO
+        if (!validarPeriodo(periodoNovo, currentUserData.matricula)) {
+            const anoAtual = new Date().getFullYear();
+            const anoIngresso = parseInt(currentUserData.matricula.substring(0, 4), 10);
+            showSystemMessage(`Período inválido. Formato esperado: AAAA.S (ex: 2025.1) com ano entre ${anoIngresso}-${anoAtual}`, "error");
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
+
+        // Buscar a atividade original para comparação
         const atividadeOriginal = await new Promise((resolve, reject) => {
             const transaction = db.transaction("atividades", "readonly");
             const store = transaction.objectStore("atividades");
@@ -2990,6 +3057,23 @@ async function handleEdicaoSubmit(e) {
 
         if (!atividadeOriginal) {
             showSystemMessage("Atividade não encontrada", "error");
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
+
+        // VERIFICAÇÃO DE ALTERAÇÕES: Comparar com os dados originais
+        const houveAlteracoes =
+            atividadeOriginal.nome !== nome ||
+            atividadeOriginal.tipo !== tipoNovo ||
+            atividadeOriginal.horasRegistradas !== horasNovas ||
+            atividadeOriginal.periodo !== periodoNovo ||
+            (comprovanteFile !== undefined);
+
+        if (!houveAlteracoes) {
+            showSystemMessage("Nenhuma alteração foi realizada.", "info");
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
             return;
         }
 
@@ -2998,10 +3082,10 @@ async function handleEdicaoSubmit(e) {
         // PROCESSAR NOVO COMPROVANTE SE HOUVER
         let novoComprovante = atividadeOriginal.comprovante;
         if (comprovanteFile) {
-            novoComprovante = await fileToArrayBuffer(comprovanteFile);
+            novoComprovante = await arquivoParaArrayBuffer(comprovanteFile);
         }
 
-        // Se a atividade já foi avaliada, voltar para status Pendente
+        // Se a atividade já foi avaliada, voltar para status Pendente após edição
         const novoStatus = (atividadeOriginal.status === 'Pendente') ? 'Pendente' : 'Pendente';
         const novasHorasValidadas = 0; // Zerar até nova avaliação
 
@@ -3026,13 +3110,25 @@ async function handleEdicaoSubmit(e) {
         });
 
         showSystemMessage("Atividade atualizada com sucesso! Aguarde reavaliação do coordenador.", "success");
+
+        // Limpar formulário
         const form = getElementSafe("formEdicao");
         if (form) form.reset();
+
+        // Limpar campo de arquivo e info do comprovante
+        comprovanteEdicaoInput.value = "";
+        const comprovanteAtualInfo = getElementSafe("comprovanteAtualInfo");
+        if (comprovanteAtualInfo) comprovanteAtualInfo.textContent = "";
+
         atualizarTabela();
         atualizarResumo();
 
     } catch (error) {
         showSystemMessage("Erro ao atualizar atividade: " + error, "error");
+    } finally {
+        // Restaurar o botão em qualquer caso
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
     }
 }
 
@@ -3045,17 +3141,14 @@ function popularSelects() {
         getElementSafe("tipoEdicao")
     ];
 
+    // Limpa os selects principais e adiciona opção com valor "padrao"
     selects.forEach(select => {
         if (select) {
-            select.innerHTML = '<option value="">Selecione um tipo</option>';
+            select.innerHTML = '<option value="padrao">Selecione uma opção</option>';
         }
     });
 
-    const filtroSelect = getElementSafe("filtroTipo");
-    if (filtroSelect) {
-        filtroSelect.innerHTML = '<option value="Todos">Todos os tipos</option>';
-    }
-
+    // Popula com as opções reais
     opcoesAtividades.forEach(opt => {
         selects.forEach(select => {
             if (select) {
@@ -3065,19 +3158,26 @@ function popularSelects() {
                 select.appendChild(option);
             }
         });
-
-        if (filtroSelect) {
-            const filtroOption = document.createElement("option");
-            filtroOption.value = opt;
-            filtroOption.textContent = opt;
-            filtroSelect.appendChild(filtroOption);
-        }
     });
 
-    // Adiciona o select para grupos
+    // Filtro de tipo
+    const filtroSelect = getElementSafe("filtroTipo");
+    if (filtroSelect) {
+        filtroSelect.innerHTML = '<option value="Todos">Todos os tipos</option>';
+
+        opcoesAtividades.forEach(opt => {
+            const option = document.createElement("option");
+            option.value = opt;
+            option.textContent = opt;
+            filtroSelect.appendChild(option);
+        });
+    }
+
+    // Filtro de grupo
     const filtroGrupo = getElementSafe("filtroGrupo");
     if (filtroGrupo) {
         filtroGrupo.innerHTML = '<option value="Todos">Todos os grupos</option>';
+
         gruposAtividades.forEach(grupo => {
             const option = document.createElement("option");
             option.value = grupo;
@@ -3085,9 +3185,189 @@ function popularSelects() {
             filtroGrupo.appendChild(option);
         });
 
+        // Remove event listener existente para evitar duplicação
+        filtroGrupo.removeEventListener("change", atualizarFiltroTipoPorGrupo);
         // Adiciona o event listener para o filtro de grupo
         filtroGrupo.addEventListener("change", atualizarFiltroTipoPorGrupo);
     }
+
+    // Remove event listener existente para evitar duplicação no filtro de tipo
+    if (filtroSelect) {
+        filtroSelect.removeEventListener("change", atualizarFiltroGrupoPorTipo);
+        filtroSelect.addEventListener("change", atualizarFiltroGrupoPorTipo);
+    }
+
+    // Adicionar funcionalidade de pesquisa aos selects
+    adicionarPesquisaIntegradaAosSelects();
+}
+
+/**
+ * Adiciona pesquisa integrada aos selects
+ */
+function adicionarPesquisaIntegradaAosSelects() {
+    const selectIds = ['tipo', 'tipoEdicao', 'filtroTipo', 'filtroGrupo'];
+
+    selectIds.forEach(selectId => {
+        const originalSelect = document.getElementById(selectId);
+        if (!originalSelect) return;
+
+        // Verificar se já foi convertido
+        if (originalSelect.classList.contains('hidden-original')) {
+            return;
+        }
+
+        // Criar container
+        const container = document.createElement('div');
+        container.className = 'searchable-select-wrapper';
+
+        // Criar select personalizado
+        let customSelect, selectText;
+
+        if (selectId === 'tipoEdicao') {
+            customSelect = document.createElement('div');
+            customSelect.className = 'custom-select-edicao';
+
+            // Texto do select - usa o texto da opção selecionada ou padrão
+            selectText = document.createElement('span');
+            selectText.className = 'select-text-edicao';
+        } else {
+            customSelect = document.createElement('div');
+            customSelect.className = 'custom-select';
+
+            // Texto do select - usa o texto da opção selecionada ou padrão
+            selectText = document.createElement('span');
+            selectText.className = 'select-text';
+        }
+
+        // Define o texto baseado no select atual
+        const selectedOption = originalSelect.options[originalSelect.selectedIndex];
+        selectText.textContent = selectedOption ? selectedOption.text : 'Selecione uma opção';
+
+        // Ícone de lupa - MESMO POSICIONAMENTO DO ÍCONE DE INFORMAÇÃO
+        const searchIcon = document.createElement('i');
+        searchIcon.className = 'fas fa-search select-search-integrated-icon';
+
+        // Dropdown com pesquisa
+        const dropdown = document.createElement('div');
+        dropdown.className = 'select-dropdown';
+
+        // Input de pesquisa dentro do dropdown
+        const searchInput = document.createElement('input');
+        searchInput.type = 'text';
+        searchInput.placeholder = 'Pesquisar...';
+        searchInput.className = 'dropdown-search-input';
+
+        // Lista de opções
+        const optionsList = document.createElement('div');
+        optionsList.className = 'select-options';
+
+        // Adicionar elementos ao DOM
+        customSelect.appendChild(selectText);
+        customSelect.appendChild(searchIcon);
+        dropdown.appendChild(searchInput);
+        dropdown.appendChild(optionsList);
+        container.appendChild(customSelect);
+        container.appendChild(dropdown);
+
+        // Substituir o select original - inserir ANTES do select original
+        originalSelect.parentNode.insertBefore(container, originalSelect);
+
+        // Ocultar completamente o select original
+        originalSelect.classList.add('hidden-original');
+
+        // Popular opções
+        function populateOptions(filter = '') {
+            optionsList.innerHTML = '';
+            const options = Array.from(originalSelect.options);
+            const filteredOptions = options.filter(option =>
+                option.text.toLowerCase().includes(filter.toLowerCase()) && option.value !== "padrao"
+            );
+
+            if (filteredOptions.length === 0) {
+                const noResults = document.createElement('div');
+                noResults.className = 'no-results';
+                noResults.textContent = 'Nenhum resultado encontrado';
+                optionsList.appendChild(noResults);
+                return;
+            }
+
+            filteredOptions.forEach(option => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'select-option';
+                optionDiv.textContent = option.text;
+
+                optionDiv.addEventListener('mouseenter', function () {
+                    this.style.backgroundColor = '#f5f5f5';
+                });
+
+                optionDiv.addEventListener('mouseleave', function () {
+                    this.style.backgroundColor = '';
+                });
+
+                optionDiv.addEventListener('click', function () {
+                    originalSelect.value = option.value;
+                    selectText.textContent = option.text;
+                    dropdown.style.display = 'none';
+                    searchInput.value = '';
+                    customSelect.classList.remove('active');
+
+                    // Disparar evento change no select original
+                    const event = new Event('change', { bubbles: true });
+                    originalSelect.dispatchEvent(event);
+                });
+
+                optionsList.appendChild(optionDiv);
+            });
+        }
+
+        // Event listeners
+        customSelect.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const isOpen = dropdown.style.display === 'block';
+            dropdown.style.display = isOpen ? 'none' : 'block';
+
+            if (!isOpen) {
+                customSelect.classList.add('active');
+                populateOptions();
+                setTimeout(() => searchInput.focus(), 10);
+            } else {
+                customSelect.classList.remove('active');
+            }
+        });
+
+        searchInput.addEventListener('input', function (e) {
+            populateOptions(e.target.value);
+        });
+
+        searchInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                dropdown.style.display = 'none';
+                customSelect.classList.remove('active');
+            }
+            if (e.key === 'Enter') {
+                const firstOption = optionsList.querySelector('.select-option');
+                if (firstOption) {
+                    firstOption.click();
+                }
+            }
+        });
+
+        // Fechar dropdown ao clicar fora
+        document.addEventListener('click', function () {
+            dropdown.style.display = 'none';
+            customSelect.classList.remove('active');
+            searchInput.value = '';
+            populateOptions();
+        });
+
+        // Prevenir fechamento quando clicar dentro do dropdown
+        dropdown.addEventListener('click', function (e) {
+            e.stopPropagation();
+        });
+
+        // Inicializar opções
+        populateOptions();
+    });
 }
 
 /**
@@ -3096,7 +3376,6 @@ function popularSelects() {
 function atualizarFiltroTipoPorGrupo() {
     const grupoSelect = getElementSafe("filtroGrupo");
     const tipoSelect = getElementSafe("filtroTipo");
-
     if (!grupoSelect || !tipoSelect) return;
 
     const grupoSelecionado = grupoSelect.value;
@@ -3129,9 +3408,86 @@ function atualizarFiltroTipoPorGrupo() {
         });
     }
 
-    // Tenta restaurar a seleção anterior, se ainda estiver disponível
-    if (tipoSelecionado && Array.from(tipoSelect.options).some(opt => opt.value === tipoSelecionado)) {
-        tipoSelect.value = tipoSelecionado;
+    // Tenta restaurar a seleção anterior apenas se for compatível com o grupo selecionado
+    if (tipoSelecionado && tipoSelecionado !== "Todos") {
+        const tipoCompativel = Array.from(tipoSelect.options).some(opt =>
+            opt.value === tipoSelecionado
+        );
+
+        if (tipoCompativel) {
+            tipoSelect.value = tipoSelecionado;
+        } else {
+            // Se o tipo anterior não é compatível com o grupo, volta para "Todos"
+            tipoSelect.value = "Todos";
+        }
+    }
+}
+
+/**
+ * Atualiza o filtro de grupo baseado no tipo selecionado
+ */
+function atualizarFiltroGrupoPorTipo() {
+    const tipoSelect = getElementSafe("filtroTipo");
+    const grupoSelect = getElementSafe("filtroGrupo");
+    if (!tipoSelect || !grupoSelect) return;
+
+    const tipoSelecionado = tipoSelect.value;
+
+    // Salva o grupo selecionado atual (se houver)
+    const grupoSelecionado = grupoSelect.value;
+
+    // Limpa o select de grupo
+    grupoSelect.innerHTML = '<option value="Todos">Todos os grupos</option>';
+
+    // Se um tipo específico foi selecionado, encontra seu grupo
+    if (tipoSelecionado !== "Todos") {
+        let grupoDoTipo = null;
+
+        // Procura em qual grupo o tipo selecionado está
+        for (const grupo in AtividadesPorGrupo) {
+            if (AtividadesPorGrupo[grupo].includes(tipoSelecionado)) {
+                grupoDoTipo = grupo;
+                break;
+            }
+        }
+
+        // Se encontrou o grupo, mostra apenas esse grupo
+        if (grupoDoTipo) {
+            const option = document.createElement("option");
+            option.value = grupoDoTipo;
+            option.textContent = grupoDoTipo;
+            grupoSelect.appendChild(option);
+        } else {
+            // Se não encontrou (teoricamente não deveria acontecer), mostra todos
+            gruposAtividades.forEach(grupo => {
+                const option = document.createElement("option");
+                option.value = grupo;
+                option.textContent = grupo;
+                grupoSelect.appendChild(option);
+            });
+        }
+    } else {
+        // Se "Todos" foi selecionado, mostra todos os grupos
+        gruposAtividades.forEach(grupo => {
+            const option = document.createElement("option");
+            option.value = grupo;
+            option.textContent = grupo;
+            grupoSelect.appendChild(option);
+        });
+    }
+
+    // Tenta restaurar a seleção anterior apenas se for compatível com o tipo selecionado
+    if (grupoSelecionado && grupoSelecionado !== "Todos") {
+        const grupoCompativel = Array.from(grupoSelect.options).some(opt =>
+            opt.value === grupoSelecionado
+        );
+
+        if (grupoCompativel) {
+            grupoSelect.value = grupoSelecionado;
+        } else {
+            // Se o grupo anterior não é compatível com o tipo, volta para "Todos"
+            grupoSelect.value = "Todos";
+        }
     }
 }
 
@@ -3208,9 +3564,25 @@ function atualizarTabela() {
                     <td>${atividade.periodo}</td>
                     <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                     <td style="text-align: center; vertical-align: middle;">
-                        <button class="action-btn download" onclick="baixarComprovante(${atividade.id})" ${!atividade.comprovante ? 'disabled' : ''}>
+                        <button class="action-btn download" onclick="visualizarComprovante(${atividade.id})" ${!atividade.comprovante ? 'disabled' : ''}>
                             <i class="fas fa-download"></i>
                         </button>
+                        <!-- Modal para Preview do Comprovante -->
+                        <div id="previewComprovanteOverlay" class="modal-overlay" style="display: none;">
+                            <div class="modal-content-preview">
+                                <div class="modal-header">
+                                    <h2>Visualizar Comprovante</h2>
+                                    <span class="btn-close" onclick="fecharPreviewComprovante()">&times;</span>
+                                </div>
+                                <div class="modal-body">
+                                    <iframe id="previewComprovanteIframe" width="100%" height="500px"></iframe>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="form-btn secondary" onclick="fecharPreviewComprovante()">Fechar</button>
+                                    <button class="form-btn primary" onclick="baixarComprovanteAtual()">Baixar Comprovante</button>
+                                </div>
+                            </div>
+                        </div>
                     </td>
                     <td style="vertical-align: middle;">
                         <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
@@ -3266,7 +3638,7 @@ async function atualizarResumo() {
             }
             cursor.continue();
         } else {
-            const progressoTotal = Math.min(100, Math.round((totalHorasValidadas / HORAS_NECESSARIAS) * 100));
+            const progressoTotal = Math.min(100, Math.round((totalHorasValidadas / horasNecessariasCurso) * 100));
 
             const resumoHorasRegistradas = getElementSafe("resumoHorasRegistradas");
             const resumoHorasValidadas = getElementSafe("resumoHorasValidadas");
@@ -3283,7 +3655,7 @@ async function atualizarResumo() {
             if (totalHorasValidadasElem) totalHorasValidadasElem.textContent = totalHorasValidadas;
             if (progressoTotalPercent) progressoTotalPercent.textContent = `${progressoTotal}%`;
             if (progressoTotalFill) progressoTotalFill.style.width = `${progressoTotal}%`;
-            if (horasValidadasPercent) horasValidadasPercent.textContent = `${totalHorasValidadas}/${HORAS_NECESSARIAS}`;
+            if (horasValidadasPercent) horasValidadasPercent.textContent = `${totalHorasValidadas}/${horasNecessariasCurso}`;
             if (horasValidadasFill) horasValidadasFill.style.width = `${progressoTotal}%`;
 
             if (document.getElementById("resumo").classList.contains("active")) {
@@ -3332,7 +3704,7 @@ async function atualizarGraficoResumo() {
             cursor.continue();
         } else {
             const totalHorasValidadas = Object.values(horasPorGrupo).reduce((a, b) => a + b, 0);
-            const horasRestantes = Math.max(0, HORAS_NECESSARIAS - totalHorasValidadas);
+            const horasRestantes = Math.max(0, horasNecessariasCurso - totalHorasValidadas);
 
             const labels = [];
             const data = [];
@@ -3406,6 +3778,37 @@ async function atualizarGraficoResumo() {
 function limparCadastro() {
     const form = getElementSafe("formCadastro");
     if (form) form.reset();
+
+    // Resetar os componentes personalizados dos selects
+    const selects = ['tipo'];
+    selects.forEach(selectId => {
+        const originalSelect = document.getElementById(selectId);
+        if (!originalSelect) return;
+
+        // Resetar o select original
+        originalSelect.value = "";
+
+        // Atualizar o componente personalizado
+        const wrapper = originalSelect.previousElementSibling;
+        if (wrapper && wrapper.classList.contains('searchable-select-wrapper')) {
+            const selectText = wrapper.querySelector('.select-text');
+            if (selectText) {
+                selectText.textContent = "Selecione uma opção";
+            }
+
+            // Fechar dropdown se estiver aberto
+            const dropdown = wrapper.querySelector('.select-dropdown');
+            if (dropdown) {
+                dropdown.style.display = 'none';
+            }
+
+            // Limpar campo de pesquisa
+            const searchInput = wrapper.querySelector('.dropdown-search-input');
+            if (searchInput) {
+                searchInput.value = '';
+            }
+        }
+    });
 }
 
 /**
@@ -3422,22 +3825,61 @@ function handleFiltroSubmit(e) {
  */
 function limparFiltros() {
     const filtroGrupo = getElementSafe("filtroGrupo");
+    const filtroTipo = getElementSafe("filtroTipo");
     const filtroPeriodo = getElementSafe("filtroPeriodo");
 
     if (filtroGrupo) filtroGrupo.value = "Todos";
+    if (filtroTipo) filtroTipo.value = "Todos";
     if (filtroPeriodo) filtroPeriodo.value = "";
 
     // Atualiza o select de tipos para mostrar todos
     atualizarFiltroTipoPorGrupo();
+    atualizarFiltroGrupoPorTipo();
+
+    // Resetar os componentes personalizados dos selects de filtro
+    const selectsFiltro = ['filtroGrupo', 'filtroTipo'];
+
+    selectsFiltro.forEach(selectId => {
+        const originalSelect = document.getElementById(selectId);
+        if (!originalSelect) return;
+
+        // Encontrar o wrapper do componente personalizado
+        const wrapper = originalSelect.previousElementSibling;
+        if (wrapper && wrapper.classList.contains('searchable-select-wrapper')) {
+            const selectText = wrapper.querySelector('.select-text');
+            if (selectText) {
+                // Definir o texto baseado no valor atual do select original
+                const selectedOption = originalSelect.options[originalSelect.selectedIndex];
+                selectText.textContent = selectedOption ? selectedOption.text :
+                    (selectId === 'filtroGrupo' ? 'Todos os grupos' : 'Todos os tipos');
+            }
+
+            // Fechar dropdown se estiver aberto
+            const dropdown = wrapper.querySelector('.select-dropdown');
+            if (dropdown) {
+                dropdown.style.display = 'none';
+            }
+
+            // Limpar campo de pesquisa
+            const searchInput = wrapper.querySelector('.dropdown-search-input');
+            if (searchInput) {
+                searchInput.value = '';
+            }
+        }
+    });
 
     atualizarTabela();
 }
 
+// Variáveis globais para gerenciar o comprovante atual
+let __CURRENT_COMPROVANTE = null;
+let __CURRENT_COMPROVANTE_BLOBURL = null;
+
 /**
- * Baixa o comprovante de uma atividade
+ * Abre o preview do comprovante de uma atividade
  * @param {number} id ID da atividade
  */
-async function baixarComprovante(id) {
+async function visualizarComprovante(id) {
     try {
         const atividade = await new Promise((resolve, reject) => {
             const transaction = db.transaction("atividades", "readonly");
@@ -3449,25 +3891,99 @@ async function baixarComprovante(id) {
         });
 
         if (atividade && atividade.comprovante) {
-            const blob = new Blob([atividade.comprovante], { type: 'application/pdf' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `comprovante_${id}.pdf`;
-            document.body.appendChild(a);
-            a.click();
+            // Limpar comprovante anterior
+            if (__CURRENT_COMPROVANTE_BLOBURL) {
+                URL.revokeObjectURL(__CURRENT_COMPROVANTE_BLOBURL);
+            }
 
-            setTimeout(() => {
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }, 100);
+            // Salvar dados do comprovante atual
+            __CURRENT_COMPROVANTE = {
+                id: atividade.id,
+                nome: atividade.nome,
+                arrayBuffer: atividade.comprovante
+            };
+
+            // Criar blob URL para o preview
+            const blob = new Blob([atividade.comprovante], { type: 'application/pdf' });
+            const blobUrl = URL.createObjectURL(blob);
+            __CURRENT_COMPROVANTE_BLOBURL = blobUrl;
+
+            // Mostrar o modal
+            const overlay = document.getElementById('previewComprovanteOverlay');
+            const iframe = document.getElementById('previewComprovanteIframe');
+            if (overlay && iframe) {
+                iframe.src = blobUrl;
+                overlay.style.display = "flex";
+            }
         } else {
             showSystemMessage("Nenhum comprovante disponível para esta atividade", "info");
         }
     } catch (error) {
-        showSystemMessage("Erro ao baixar comprovante: " + error, "error");
+        showSystemMessage("Erro ao abrir comprovante: " + error, "error");
     }
 }
+
+/**
+ * Baixa o comprovante atualmente em preview
+ */
+function baixarComprovanteAtual() {
+    if (!__CURRENT_COMPROVANTE || !__CURRENT_COMPROVANTE_BLOBURL) {
+        showSystemMessage("Nenhum comprovante para baixar", "error");
+        return;
+    }
+
+    try {
+        const a = document.createElement('a');
+        a.href = __CURRENT_COMPROVANTE_BLOBURL;
+        a.download = `comprovante_${__CURRENT_COMPROVANTE.id}_${__CURRENT_COMPROVANTE.nome.replace(/[^a-z0-9]/gi, '_')}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+
+        setTimeout(() => {
+            document.body.removeChild(a);
+        }, 100);
+
+        showSystemMessage("Comprovante baixado com sucesso!", "success");
+    } catch (error) {
+        showSystemMessage("Erro ao baixar comprovante: " + error.message, "error");
+    }
+}
+
+/**
+ * Fecha o preview do comprovante
+ */
+function fecharPreviewComprovante() {
+    const overlay = document.getElementById('previewComprovanteOverlay');
+    const iframe = document.getElementById('previewComprovanteIframe');
+    if (overlay) {
+        overlay.style.display = "none";
+    }
+    if (iframe) {
+        iframe.src = 'about:blank';
+    }
+
+    if (__CURRENT_COMPROVANTE_BLOBURL) {
+        URL.revokeObjectURL(__CURRENT_COMPROVANTE_BLOBURL);
+        __CURRENT_COMPROVANTE_BLOBURL = null;
+    }
+
+    __CURRENT_COMPROVANTE = null;
+}
+
+// Fechar modal ao clicar fora dele
+window.addEventListener('click', function (event) {
+    const overlay = document.getElementById('previewComprovanteOverlay');
+    if (event.target === overlay) {
+        fecharPreviewComprovante();
+    }
+});
+
+// Limpar URLs quando a página for descarregada
+window.addEventListener('beforeunload', function () {
+    if (__CURRENT_COMPROVANTE_BLOBURL) {
+        URL.revokeObjectURL(__CURRENT_COMPROVANTE_BLOBURL);
+    }
+});
 
 /**
  * Exporta os dados do estudante para um arquivo ZIP
@@ -3511,7 +4027,7 @@ async function exportarDados() {
         const zip = new JSZip();
 
         // 1. Criar arquivo CSV com proteção de curso
-        let csvContent = `Curso�${CURSO_DE_GRADUACAO}\n`; // Linha de proteção
+        let csvContent = `Curso�${cursoDeGraducao}\n`; // Linha de proteção
         // Adicionar linha com dados do usuário
         csvContent += `Dados do usuário�${estudante.nome}�${estudante.usuario}�${estudante.matricula}�${estudante.senha}\n`;
         csvContent += "ID�Nome�Tipo�Horas Registradas�Horas Validadas�Período�Status�\n";
@@ -3562,19 +4078,21 @@ async function importarDados() {
         try {
             const zip = new JSZip();
             const content = await zip.loadAsync(file);
+
             // 1. Processar CSV e verificar compatibilidade do curso
             const csvFiles = Object.values(content.files).filter(f => f.name.endsWith('.csv'));
             if (csvFiles.length === 0) throw new Error("Arquivo CSV não encontrado no ZIP");
             const csvFile = csvFiles[0];
             const csvContent = await csvFile.async('string');
             const linhas = csvContent.split('\n').filter(linha => linha.trim() !== '');
+
             // Verificação de compatibilidade do curso
             if (linhas.length === 0 || !linhas[0].startsWith('Curso�')) {
                 throw new Error("Arquivo inválido: Formato não reconhecido");
             }
             const cursoImportado = linhas[0].split('�')[1];
-            if (cursoImportado !== CURSO_DE_GRADUACAO) {
-                throw new Error(`Arquivo incompatível! Este arquivo pertence ao curso: ${cursoImportado}. O sistema atual é configurado para: ${CURSO_DE_GRADUACAO}.`);
+            if (cursoImportado !== cursoDeGraducao) {
+                throw new Error(`Arquivo incompatível! Este arquivo pertence ao curso: ${cursoImportado}. O sistema atual é configurado para: ${cursoDeGraducao}.`);
             }
 
             // Obter matrícula do estudante logado
@@ -3591,6 +4109,7 @@ async function importarDados() {
                     }
                 }
             }
+
             // 3. Importar atividades (ignorando a primeira linha do curso)
             let importadas = 0;
             for (let i = 3; i < linhas.length; i++) {
@@ -3598,7 +4117,7 @@ async function importarDados() {
                     const campos = linhas[i].split('�');
                     if (campos.length < 7) continue;
 
-                    // VALIDAÇÃO DO PERÍODO DA ATIVIDADE (igual à do coordenador)
+                    // VALIDAÇÃO DO PERÍODO DA ATIVIDADE
                     const periodoAtividade = campos[5];
                     if (!validarPeriodo(periodoAtividade, matriculaEstudante)) {
                         console.warn(`Atividade na linha ${i} ignorada: período inválido`);
@@ -3610,11 +4129,12 @@ async function importarDados() {
                         nome: campos[1],
                         tipo: campos[2],
                         horasRegistradas: parseFloat(campos[3]),
-                        horasValidadas: parseFloat(0),
+                        horasValidadas: 0, // SEMPRE 0 na importação pelo estudante
                         periodo: periodoAtividade,
-                        status: 'Pendent',
+                        status: 'Pendente', // CORRIGIDO: Sempre 'Pendente' na importação pelo estudante
                         comprovante: comprovantes[campos[0]] || null
                     };
+
                     await new Promise((resolve, reject) => {
                         const transaction = db.transaction("atividades", "readwrite");
                         const store = transaction.objectStore("atividades");
@@ -3627,11 +4147,12 @@ async function importarDados() {
                     console.error(`Erro na linha ${i}:`, error);
                 }
             }
-            // 4. Atualizar UI
-            recalcularHorasGlobal();
+
+            // 4. Atualizar UI - REMOVIDA a chamada para recalcularHorasGlobal()
             atualizarTabela();
             atualizarResumo();
-            showSystemMessage(`${importadas} atividades importadas com sucesso!`, "success");
+            showSystemMessage(`${importadas} atividades importadas com sucesso! Aguarde avaliação do coordenador.`, "success");
+
         } catch (error) {
             // Tratamento especial para erro de compatibilidade
             if (error.message.includes("incompatível")) {
@@ -3646,167 +4167,23 @@ async function importarDados() {
 
 /**
  * Gera um relatório em PDF das atividades
+ * VARIÁVEIS GLOBAIS PARA O RELATÓRIO PDF 
+*/
+let __CURRENT_DOC = null;
+let __CURRENT_BLOBURL = null;
+
+/**
+ * Gera um relatório em PDF no formato ABNT com preview e Manipula o clique no botão de gerar relatório
  */
 async function handleImprimir() {
-    const btn = getElementSafe("imprimirBtn");
-    if (!btn) return;
-
+    const btn = document.getElementById("imprimirBtn");
     const originalText = btn.innerHTML;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando PDF...';
     btn.disabled = true;
 
     try {
-        const nomeAluno = currentUser;
-        const matricula = await obterMatriculaAluno();
-        const atividades = await obterAtividadesParaRelatorio();
-
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'a4'
-        });
-
-        // Configurações de estilo
-        const primaryColor = [13, 27, 71];
-        const secondaryColor = [243, 115, 33];
-
-        // Cabeçalho institucional
-        doc.setFillColor(...primaryColor);
-        doc.rect(0, 0, 210, 30, 'F');
-        doc.setFontSize(16);
-        doc.setTextColor(255, 255, 255);
-        doc.text("UEMA", 20, 20);
-        doc.setFontSize(10);
-        doc.text("Universidade Estadual do Maranhão", 105, 10, null, null, 'center');
-        doc.text("Centro de Ciências Tecnológicas - CCT", 105, 15, null, null, 'center');
-        doc.text("Curso Engenharia de Produção Bacharelado", 105, 20, null, null, 'center');
-        doc.text("Sistema Integrado de Gestão de Atividades Acadêmicas", 105, 30, null, null, 'center');
-
-        // Informações do aluno
-        const yStart = 40;
-        doc.setFontSize(12);
-        doc.setTextColor(0, 0, 0);
-        doc.text(`Aluno: ${nomeAluno}`, 20, yStart);
-        doc.text(`Matrícula: ${matricula}`, 20, yStart + 7);
-        doc.text(`Data de emissão: ${new Date().toLocaleDateString('pt-BR')}`, 120, yStart + 7);
-
-        // Título do relatório
-        doc.setFontSize(14);
-        doc.setFont("helvetica", "bold");
-        doc.text("RELATÓRIO DE ATIVIDADES COMPLEMENTARES", 105, yStart + 20, null, null, 'center');
-
-        // Texto introdutório
-        doc.setFontSize(11);
-        doc.setFont("helvetica", "normal");
-        const textoIntro = [
-            "Declaro para os devidos fins que o(a) aluno(a) acima identificado(a) realizou as atividades",
-            "complementares relacionadas abaixo durante o curso de Engenharia de Produção, conforme registro",
-            "no sistema de gestão desenvolvido por Diego Bezerra Reinaldo e em atendimento à Resolução CEPE 037/2024."
-        ];
-
-        textoIntro.forEach((linha, i) => {
-            doc.text(linha, 20, yStart + 35 + (i * 6));
-        });
-
-        // Preparar dados da tabela
-        const headers = [["Nome da Atividade", "Tipo", "Horas Registradas", "Horas Validadas", "Período", "Status"]];
-        const data = atividades.map(atividade => [
-            atividade.nome,
-            atividade.tipo,
-            atividade.horasRegistradas.toString(),
-            atividade.horasValidadas.toString(),
-            atividade.periodo,
-            atividade.status
-        ]);
-
-        // Gerar tabela estilizada
-        doc.autoTable({
-            startY: yStart + 60,
-            head: headers,
-            body: data,
-            theme: 'grid',
-            styles: {
-                fontSize: 9,
-                cellPadding: 2,
-                textColor: [0, 0, 0],
-                font: 'helvetica',
-                lineWidth: 0.1
-            },
-            headStyles: {
-                fillColor: primaryColor,
-                textColor: [255, 255, 255],
-                fontStyle: 'bold',
-                halign: 'center',
-                lineWidth: 0.1
-            },
-            bodyStyles: {
-                lineWidth: 0.1
-            },
-            alternateRowStyles: {
-                fillColor: [245, 245, 245]
-            },
-            columnStyles: {
-                0: { cellWidth: 55, halign: 'left' },
-                1: { cellWidth: 45, halign: 'left' },
-                2: { halign: 'center', cellWidth: 20 },
-                3: { halign: 'center', cellWidth: 20 },
-                4: { halign: 'center', cellWidth: 20 },
-                5: { halign: 'center', cellWidth: 20 }
-            },
-            margin: { left: 15, right: 15 }
-        });
-
-        const finalY = doc.autoTable.previous.finalY;
-
-        // Totais
-        const totalHorasRegistradas = atividades.reduce((sum, a) => sum + a.horasRegistradas, 0);
-        const totalHorasValidadas = atividades.reduce((sum, a) => sum + a.horasValidadas, 0);
-        const progresso = Math.min(100, Math.round((totalHorasValidadas / 225) * 100));
-
-        doc.setFontSize(11);
-        doc.setFont("helvetica", "bold");
-        doc.text("RESUMO DE HORAS", 20, finalY + 15);
-
-        doc.setFont("helvetica", "normal");
-        doc.text(`Total de Horas Registradas: ${totalHorasRegistradas}`, 30, finalY + 25);
-        doc.text(`Total de Horas Validadas: ${totalHorasValidadas}`, 30, finalY + 32);
-        doc.text(`Horas Necessárias: 225`, 30, finalY + 39);
-
-        // Barra de progresso
-        const barWidth = 80;
-        const barHeight = 8;
-        const barX = 130;
-        const barY = finalY + 25;
-
-        // Fundo da barra
-        doc.setFillColor(200, 200, 200);
-        doc.rect(barX, barY, barWidth, barHeight, 'F');
-
-        // Barra de progresso
-        doc.setFillColor(...secondaryColor);
-        doc.rect(barX, barY, barWidth * (progresso / 100), barHeight, 'F');
-
-        // Texto da barra
-        doc.setFontSize(9);
-        doc.text(`Progresso: ${progresso}%`, barX, barY - 2);
-        doc.text(`${totalHorasValidadas} / 225 horas`, barX + barWidth + 5, barY + barHeight / 2 + 1);
-
-        // Rodapé institucional
-        doc.setDrawColor(...primaryColor);
-        doc.setLineWidth(0.5);
-        const footerY = 285;
-        doc.line(15, footerY, 195, footerY);
-
-        doc.setFontSize(9);
-        doc.setTextColor(100, 100, 100);
-        doc.text("Centro de Ciências Tecnológicas - CCT/UEMA, Cidade Universitária Paulo VI, São Luís - MA", 105, footerY + 5, null, null, 'center');
-        doc.text("Contato: diego.dbr811@gmail.com | Instagram: @eaidih", 105, footerY + 10, null, null, 'center');
-        doc.text("SIGACC - Sistema Integrado de Gestão de Atividades Complementares Curriculares", 105, footerY + 15, null, null, 'center');
-
-        // Salvar PDF
-        doc.save(`Relatorio_Atividades_Complementares_${nomeAluno.replace(/\s+/g, '_')}.pdf`);
-
+        // CORREÇÃO: Chamar a função correta de preview do relatório
+        await previewRelatorioABNT();
     } catch (error) {
         showSystemMessage("Erro ao gerar relatório: " + error.message, "error");
         console.error(error);
@@ -3814,6 +4191,1081 @@ async function handleImprimir() {
         btn.innerHTML = originalText;
         btn.disabled = false;
     }
+}
+
+/**
+ * Prepara e exibe o preview do relatório ABNT
+ */
+async function previewRelatorioABNT() {
+    // Liberar URL anterior se houver
+    if (__CURRENT_BLOBURL) {
+        URL.revokeObjectURL(__CURRENT_BLOBURL);
+        __CURRENT_BLOBURL = null;
+    }
+
+    const btn = document.getElementById("imprimirBtn");
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando Relatório...';
+    btn.disabled = true;
+
+    try {
+        const pdfArrayBuffer = await gerarRelatorioCompleto();
+
+        // Criar blob URL para o preview
+        const blob = new Blob([pdfArrayBuffer], { type: "application/pdf" });
+        const blobUrl = URL.createObjectURL(blob);
+        __CURRENT_BLOBURL = blobUrl;
+
+        // CORREÇÃO: Usar os IDs corretos do modal do relatório
+        const overlay = document.getElementById('previewRelatorioOverlay');
+        const iframe = document.getElementById('previewRelatorioIframe');
+
+        if (overlay && iframe) {
+            iframe.src = blobUrl;
+            overlay.style.display = "flex";
+        } else {
+            console.error('Elementos do modal de relatório não encontrados');
+            showSystemMessage("Erro ao abrir preview do relatório", "error");
+        }
+
+    } catch (error) {
+        console.error('Erro ao gerar preview:', error);
+        showSystemMessage("Erro ao gerar relatório: " + error.message, "error");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+/**
+ * Baixa o PDF atual do preview do relatório
+ */
+async function baixarPdfAtual() {
+    if (!__CURRENT_BLOBURL) {
+        showSystemMessage("Nenhum relatório gerado para baixar.", "error");
+        return;
+    }
+
+    try {
+        const nomeAluno = currentUserData.nomeCompleto ?
+            currentUserData.nomeCompleto.replace(/\s+/g, '_') :
+            currentUser;
+
+        // Criar link de download
+        const a = document.createElement('a');
+        a.href = __CURRENT_BLOBURL;
+        a.download = `Relatorio_Atividades_Complementares_${nomeAluno}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+
+        // Limpeza
+        setTimeout(() => {
+            document.body.removeChild(a);
+        }, 100);
+
+        showSystemMessage("PDF baixado com sucesso!", "success");
+
+    } catch (error) {
+        console.error('Erro ao baixar PDF:', error);
+        showSystemMessage("Erro ao baixar PDF: " + error.message, "error");
+    }
+}
+
+/**
+ * Fecha o preview do relatório
+ */
+function fecharPreviewRelatorio() {
+    // CORREÇÃO: Usar os IDs corretos do modal do relatório
+    const overlay = document.getElementById('previewRelatorioOverlay');
+    const iframe = document.getElementById('previewRelatorioIframe');
+
+    if (overlay) {
+        overlay.style.display = "none";
+    }
+    if (iframe) {
+        iframe.src = 'about:blank';
+    }
+
+    if (__CURRENT_BLOBURL) {
+        URL.revokeObjectURL(__CURRENT_BLOBURL);
+        __CURRENT_BLOBURL = null;
+    }
+}
+
+// =============================================
+// ADICIONAR EVENT LISTENER PARA FECHAR MODAL AO CLICAR FORA
+// =============================================
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Fechar modal do relatório ao clicar fora
+    const relatorioOverlay = document.getElementById('previewRelatorioOverlay');
+    if (relatorioOverlay) {
+        relatorioOverlay.addEventListener('click', function (event) {
+            if (event.target === relatorioOverlay) {
+                fecharPreviewRelatorio();
+            }
+        });
+    }
+
+    // Fechar modal do comprovante ao clicar fora (já existe, mas vamos garantir)
+    const comprovanteOverlay = document.getElementById('previewComprovanteOverlay');
+    if (comprovanteOverlay) {
+        comprovanteOverlay.addEventListener('click', function (event) {
+            if (event.target === comprovanteOverlay) {
+                fecharPreviewComprovante();
+            }
+        });
+    }
+});
+
+/**
+ * Fecha o preview do PDF
+ */
+function fecharPreview() {
+    const overlay = document.getElementById('previewOverlay');
+    const iframe = document.getElementById('previewIframe');
+    if (overlay) {
+        overlay.style.display = "none";
+    }
+    if (iframe) {
+        iframe.src = 'about:blank';
+    }
+
+    if (__CURRENT_BLOBURL) {
+        URL.revokeObjectURL(__CURRENT_BLOBURL);
+        __CURRENT_BLOBURL = null;
+    }
+}
+
+/**
+ * Função principal que combina relatório + comprovantes na ORDEM DA TABELA
+ */
+async function gerarRelatorioCompleto() {
+    try {
+        // 1. Gerar o relatório textual (ABNT) com numeração
+        const relatorioArrayBuffer = await criarRelatorioCompletoABNT();
+
+        // 2. Obter atividades para processar comprovantes
+        const atividades = await getAtividadesPorUsuario(currentUser);
+        const atividadesAprovadas = atividades.filter(a => a.status === 'Aprovado');
+
+        // 3. ORDENAR atividades na MESMA ORDEM da tabela do relatório (por grupo)
+        const atividadesOrdenadas = [];
+
+        // Percorrer os grupos na mesma ordem usada no relatório
+        for (const grupo of gruposAtividades) {
+            // Filtrar atividades deste grupo
+            const atividadesDoGrupo = atividadesAprovadas.filter(atividade => {
+                for (const grupoKey in AtividadesPorGrupo) {
+                    if (AtividadesPorGrupo[grupoKey].includes(atividade.tipo)) {
+                        return grupoKey === grupo;
+                    }
+                }
+                return false;
+            });
+
+            // Adicionar atividades do grupo à lista ordenada
+            atividadesOrdenadas.push(...atividadesDoGrupo);
+        }
+
+        // 4. Coletar comprovantes na MESMA ORDEM das atividades ordenadas
+        const comprovantesProcessados = [];
+
+        for (const atividade of atividadesOrdenadas) {
+            try {
+                if (atividade.comprovante && atividade.comprovante.byteLength > 0) {
+                    // Criar página de identificação (sem numeração)
+                    const paginaIdArrayBuffer = await criarPaginaIdentificacaoComprovante(
+                        atividade.nome,
+                        atividade.periodo
+                    );
+
+                    // Adicionar página de identificação + comprovante real
+                    comprovantesProcessados.push(paginaIdArrayBuffer);
+                    comprovantesProcessados.push(atividade.comprovante);
+                }
+            } catch (error) {
+                console.error(`Erro ao processar comprovante ${atividade.id}:`, error);
+
+                // Fallback em caso de erro
+                const fallbackArrayBuffer = await criarPaginaIdentificacaoComprovante(
+                    atividade.nome,
+                    'Erro no processamento do comprovante'
+                );
+                comprovantesProcessados.push(fallbackArrayBuffer);
+            }
+        }
+
+        // 5. Combinar relatório (com numeração) + comprovantes (sem numeração) na ORDEM CORRETA
+        const todosPdfs = [relatorioArrayBuffer, ...comprovantesProcessados];
+        const pdfCombinado = await combinarPDFs(todosPdfs);
+
+        return pdfCombinado;
+
+    } catch (error) {
+        console.error('Erro ao gerar relatório completo:', error);
+        throw new Error('Falha ao gerar relatório completo');
+    }
+}
+
+/**
+ * Combina múltiplos PDFs em um único PDF
+ */
+async function combinarPDFs(pdfs) {
+    if (typeof PDFLib === 'undefined') {
+        throw new Error('A biblioteca PDFLib não foi carregada corretamente. Verifique se o script foi incluído.');
+    }
+
+    const { PDFDocument } = PDFLib;
+    const mergedPdf = await PDFDocument.create();
+
+    for (const pdf of pdfs) {
+        try {
+            // Se for um ArrayBuffer, carrega como PDF
+            let pdfDoc;
+            if (pdf instanceof ArrayBuffer || pdf instanceof Uint8Array) {
+                pdfDoc = await PDFDocument.load(pdf);
+            } else {
+                console.warn('Tipo de PDF não suportado:', typeof pdf);
+                continue;
+            }
+
+            // Copia todas as páginas
+            const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
+            pages.forEach(page => mergedPdf.addPage(page));
+
+        } catch (error) {
+            console.error('Erro ao combinar PDF:', error);
+            // Em caso de erro, cria uma página de fallback
+            const fallbackArrayBuffer = await criarPaginaIdentificacaoComprovante(
+                'Comprovante com erro de processamento',
+                'N/A'
+            );
+            const fallbackDoc = await PDFDocument.load(fallbackArrayBuffer);
+            const fallbackPages = await mergedPdf.copyPages(fallbackDoc, fallbackDoc.getPageIndices());
+            fallbackPages.forEach(page => mergedPdf.addPage(page));
+        }
+    }
+
+    return await mergedPdf.save();
+}
+
+/**
+ * Cria uma página de identificação para o comprovante no padrão ABNT
+ */
+async function criarPaginaIdentificacaoComprovante(nomeComprovante, periodo) {
+    // Verificar se jsPDF está disponível
+    if (typeof jspdf === 'undefined' && typeof window.jspdf === 'undefined') {
+        throw new Error('A biblioteca jsPDF não foi carregada corretamente. Verifique se o script foi incluído.');
+    }
+
+    // Usar jspdf baseado na disponibilidade
+    const jsPDF = window.jspdf ? window.jspdf.jsPDF : jspdf.jsPDF;
+
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+
+    // ---------- CONFIGURAÇÕES ABNT ----------
+    const margemTopo = 30;
+    const margemEsquerda = 30;
+    const margemDireita = 20;
+    const margemInferior = 20;
+
+    const larguraPagina = doc.internal.pageSize.getWidth();
+    const alturaPagina = doc.internal.pageSize.getHeight();
+    const larguraUtil = larguraPagina - margemEsquerda - margemDireita;
+
+    // ---------- FUNÇÕES AUXILIARES ----------
+    const EspacamentoEntreLinhas = 0.3528 * 12 * 1.5;
+    const EspacamentoEntreLinhasSimples = 0.3528 * 12 * 1.0;
+
+    // Função para renderizar linha justificada
+    function renderLine(wordsArr, xStart, y, maxWidth) {
+        if (wordsArr.length === 0) return;
+        if (wordsArr.length === 1) {
+            doc.text(wordsArr[0], xStart, y, { align: 'left' });
+            return;
+        }
+        const spaceCount = wordsArr.length - 1;
+        const wordsWidth = wordsArr.map(w => doc.getTextWidth(w)).reduce((a, b) => a + b, 0);
+        const totalSpacesWidth = maxWidth - wordsWidth;
+        const spaceWidth = totalSpacesWidth / spaceCount;
+
+        let x = xStart;
+        for (let i = 0; i < wordsArr.length; i++) {
+            doc.text(wordsArr[i], x, y, { align: 'left' });
+            x += doc.getTextWidth(wordsArr[i]) + spaceWidth;
+        }
+    }
+
+    // Função de justificação
+    function TextoJustificadoSemEspacamentoPrimeiraLinha(docInstance, text, xStart, yStart, maxWidth, lineHeight, fontName = "times", fontStyle = "normal", fontSize = 12) {
+        docInstance.setFont(fontName, fontStyle);
+        docInstance.setFontSize(fontSize);
+        const words = text.replace(/\s+/g, ' ').trim().split(' ');
+        let lineWords = [];
+        let y = yStart;
+
+        function lineWidth(wordsArr) {
+            if (wordsArr.length === 0) return 0;
+            return wordsArr.map(w => docInstance.getTextWidth(w)).reduce((a, b) => a + b, 0) + (wordsArr.length - 1) * docInstance.getTextWidth(' ');
+        }
+
+        for (let i = 0; i < words.length; i++) {
+            lineWords.push(words[i]);
+            let lw = lineWidth(lineWords);
+            if (lw > maxWidth) {
+                const last = lineWords.pop();
+                renderLine(lineWords, xStart, y, maxWidth);
+                lineWords = [last];
+                y += lineHeight;
+            }
+        }
+        if (lineWords.length > 0) {
+            docInstance.text(lineWords.join(' '), xStart, y, { align: 'left', maxWidth: maxWidth });
+            y += lineHeight;
+        }
+        return y;
+    }
+
+    // ---------- CONTEÚDO DA PÁGINA ----------
+    let cursorY = margemTopo;
+
+    // Título principal
+    doc.setFont("times", "bold");
+    doc.setFontSize(16);
+    doc.text("COMPROVANTE DE ATIVIDADE COMPLEMENTAR", margemEsquerda + (larguraUtil / 2), cursorY, { align: 'center' });
+    cursorY += 3 * EspacamentoEntreLinhas;
+
+    // Atividade com justificação
+    doc.setFont("times", "bold");
+    doc.setFontSize(12);
+    doc.text("Atividade: ", margemEsquerda, cursorY);
+
+    doc.setFont("times", "normal");
+    const textoAtividade = nomeComprovante;
+    cursorY = TextoJustificadoSemEspacamentoPrimeiraLinha(doc, textoAtividade, margemEsquerda, cursorY + EspacamentoEntreLinhas, larguraUtil, EspacamentoEntreLinhas, "times", "normal", 12);
+
+    cursorY += EspacamentoEntreLinhas;
+
+    // Período (se existir)
+    if (periodo && periodo !== 'N/A') {
+        doc.setFont("times", "bold");
+        doc.setFontSize(12);
+        doc.text("Período: ", margemEsquerda, cursorY);
+
+        doc.setFont("times", "normal");
+        doc.text(periodo, margemEsquerda + doc.getTextWidth("Período:_"), cursorY);
+        cursorY += 2 * EspacamentoEntreLinhas;
+    } else {
+        cursorY += EspacamentoEntreLinhas;
+    }
+
+    // Texto informativo
+    doc.setFont("times", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(128, 128, 128);
+    cursorY = TextoJustificadoSemEspacamentoPrimeiraLinha(doc, "Documento comprobatório anexado digitalmente.", margemEsquerda, cursorY, larguraUtil, EspacamentoEntreLinhas, "times", "normal", 10);
+
+    cursorY += 2 * EspacamentoEntreLinhas;
+
+    // Linha divisória
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
+    doc.line(margemEsquerda, cursorY, margemEsquerda + larguraUtil, cursorY);
+
+    cursorY += EspacamentoEntreLinhas;
+
+    // Texto de início do comprovante
+    doc.setFont("times", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text("INÍCIO DO COMPROVANTE ORIGINAL", margemEsquerda + (larguraUtil / 2), cursorY, { align: 'center' });
+
+    // Rodapé
+    const rodapeY = alturaPagina - margemInferior;
+    doc.setFont("times", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(180, 180, 180);
+    doc.text("Relatório gerado automaticamente pelo SIGACC - Sistema Integrado de Gestão de Atividades Complementares Curriculares",
+        margemEsquerda + (larguraUtil / 2), rodapeY, { align: 'center' });
+
+    // Retornar como ArrayBuffer para combinação
+    return doc.output('arraybuffer');
+}
+
+/**
+ * Cria o relatório completo no formato ABNT com numeração apenas na parte textual
+ */
+async function criarRelatorioCompletoABNT() {
+    // Verificar se jsPDF está disponível
+    if (typeof jspdf === 'undefined' && typeof window.jspdf === 'undefined') {
+        throw new Error('A biblioteca jsPDF não foi carregada corretamente. Verifique se o script foi incluído.');
+    }
+
+    // Usar jspdf baseado na disponibilidade
+    const jsPDF = window.jspdf ? window.jspdf.jsPDF : jspdf.jsPDF;
+
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+
+    // Obter dados do estudante e atividades
+    const orientador = await obterCoordenadorDoAluno();
+    const cargoOrientador = "Docente da Disciplina de Atividades Complementares";
+    const cidadeUF = "São Luís, MA";
+    const ano = new Date().getFullYear().toString();
+    const estudante = currentUserData;
+    const atividades = await getAtividadesPorUsuario(currentUser);
+    const atividadesAprovadas = atividades.filter(a => a.status === 'Aprovado');
+
+    // Agrupar atividades aprovadas por grupo
+    const atividadesPorGrupo = {};
+    gruposAtividades.forEach(grupo => {
+        atividadesPorGrupo[grupo] = atividadesAprovadas.filter(atividade => {
+            for (const grupoKey in AtividadesPorGrupo) {
+                if (AtividadesPorGrupo[grupoKey].includes(atividade.tipo)) {
+                    return grupoKey === grupo;
+                }
+            }
+            return false;
+        });
+    });
+
+    // ---------- CONFIGURAÇÕES ----------
+    const instituicao = "UNIVERSIDADE ESTADUAL DO MARANHÃO";
+    const centro = "CENTRO DE CIÊNCIAS TECNOLÓGICAS";
+    const curso = "CURSO DE GRADUAÇÃO EM ENGENHARIA DE PRODUÇÃO";
+    const nomeAluno = estudante.nome || estudante.username;
+    const matriculaAluno = estudante.matricula || "-----";
+    const tituloRelatorio = "Relatório de Atividades Complementares";
+
+    const descricaoAprovacao = "Relatório de Atividades Complementares apresentado na Universidade Estadual do Maranhão, em cumprimento às exigências da disciplina de Atividades Complementares, do Curso Bacharelado em Engenharia de Produção, com o objetivo de comprovar o cumprimento da carga horária determinada de 225h.";
+
+    const introducao_p1 = "De acordo com o disposto no Regulamento das Atividades Complementares do Curso de Engenharia de Produção da Universidade Estadual do Maranhão – 3ª atualização, é obrigatório ao discente do curso o cumprimento de 225 (duzentas e vinte e cinco) horas de Atividades Complementares (ACs). Este requisito, essencial para a obtenção do grau de Bacharel em Engenharia de Produção, está em consonância com as Resoluções CNE No. 02, de 24 de abril de 2019, e CONSUN/UEMA No. 1.369/2019, de 21 de março de 2019.";
+
+    const introducao_p2 = "Conforme estabelecido no Art. 1º do referido regulamento, as Atividades Complementares visam proporcionar flexibilização curricular e o desenvolvimento da autonomia do discente, incentivando sua participação em atividades de caráter científico, acadêmico, cultural ou social que contribuam para o enriquecimento de sua formação profissional.";
+
+    const introducao_p3 = "Para a integralização desta carga horária, o Art. 5º determina que as 225 horas devem ser distribuídas em, no mínimo, 3 (três) dos 6 (seis) grupos de atividades descritos no Anexo A do regulamento, respeitando os limites máximos de pontuação por atividade e por grupo.";
+
+    const objetivo_p1 = "Com o intuito de cumprir este requisito obrigatório para a graduação, o presente relatório tem como objetivo detalhar e comprovar as atividades realizadas pelo discente " + nomeAluno + " ao longo de sua trajetória acadêmica.";
+
+    const objetivo_p2 = "Em atendimento ao Art. 1º, § 2º, este documento serve como base para o requerimento de avaliação das atividades perante a Diretoria do Curso, apresentando de forma organizada:";
+
+    const objetivo_itemA = "a) A relação das atividades realizadas, enquadradas nos grupos previstos no Anexo A.";
+    const objetivo_itemB = "b) A carga horária pleiteada para cada atividade.";
+    const objetivo_itemC = "c) Os documentos comprobatórios que atestam a realização das mesmas (em anexo).";
+
+    const metodologia_p1 = "As atividades desenvolvidas pelo discente foram catalogadas e classificadas conforme os grupos estabelecidos no Anexo A do regulamento. A seguir, é apresentada uma tabela-resumo que consolida todas as atividades realizadas, permitindo uma visão clara do atendimento aos critérios de distribuição e carga horária total.";
+
+    const metodologia_p2 = "O discente buscou cumprir a exigência de, no mínimo, três grupos distintos, assegurando uma formação complementar diversificada, tal como preconizam os objetivos das ACs.";
+
+    // ---------- MARGENS ABNT ----------
+    const margemTopo = 30;
+    const margemEsquerda = 30;
+    const margemDireita = 20;
+    const margemInferior = 20;
+
+    const larguraPagina = doc.internal.pageSize.getWidth();
+    const alturaPagina = doc.internal.pageSize.getHeight();
+    const larguraUtil = larguraPagina - margemEsquerda - margemDireita;
+    const alturaUtil = alturaPagina - margemTopo - margemInferior;
+
+    // ---------- FUNÇÕES AUXILIARES ----------
+    const EspacamentoEntreLinhas = 0.3528 * 12 * 1.5;
+    const EspacamentoEntreLinhasSimples = 0.3528 * 12 * 1.0;
+    const pts_em_mm = 0.3528;
+
+    // Array para armazenar as páginas do sumário
+    const paginasSumario = {
+        introducao: 0,
+        objetivo: 0,
+        metodologia: 0,
+        tabelaResumo: 0,
+        consideracoesFinais: 0,
+        anexos: 0
+    };
+
+    // Função para adicionar número da página (apenas a partir da introdução)
+    function adicionarNumeroPagina(doc, numero) {
+        const pageHeight = doc.internal.pageSize.getHeight();
+        doc.setFont("times", "normal");
+        doc.setFontSize(12);
+        doc.text(numero.toString(), margemEsquerda + (larguraUtil / 2), pageHeight - margemInferior + 10, { align: 'center' });
+    }
+
+    // Funções de justificação (mantidas do código original)
+    function renderLine(wordsArr, xStart, y, maxWidth) {
+        if (wordsArr.length === 0) return;
+        if (wordsArr.length === 1) {
+            doc.text(wordsArr[0], xStart, y, { align: 'left' });
+            return;
+        }
+        const spaceCount = wordsArr.length - 1;
+        const wordsWidth = wordsArr.map(w => doc.getTextWidth(w)).reduce((a, b) => a + b, 0);
+        const totalSpacesWidth = maxWidth - wordsWidth;
+        const spaceWidth = totalSpacesWidth / spaceCount;
+
+        let x = xStart;
+        for (let i = 0; i < wordsArr.length; i++) {
+            doc.text(wordsArr[i], x, y, { align: 'left' });
+            x += doc.getTextWidth(wordsArr[i]) + spaceWidth;
+        }
+    }
+
+    function TextoJustificadoComEspacamentoPrimeiraLinha(docInstance, text, xStart, yStart, maxWidth, espacamentoInstitucional, recuoPrimeiraLinha, fontName = "times", fontStyle = "normal", fontSize = 12) {
+        docInstance.setFont(fontName, fontStyle);
+        docInstance.setFontSize(fontSize);
+
+        const words = text.replace(/\s+/g, ' ').trim().split(' ');
+        let lineWords = [];
+        let y = yStart;
+
+        function lineWidth(wordsArr) {
+            if (wordsArr.length === 0) return 0;
+            return (
+                wordsArr.map(w => docInstance.getTextWidth(w)).reduce((a, b) => a + b, 0) +
+                (wordsArr.length - 1) * docInstance.getTextWidth(' ')
+            );
+        }
+
+        let primeiraLinhaParagrafo = true;
+
+        for (let i = 0; i < words.length; i++) {
+            lineWords.push(words[i]);
+
+            const larguraDisponivel = primeiraLinhaParagrafo ? maxWidth - recuoPrimeiraLinha : maxWidth;
+
+            let lw = lineWidth(lineWords);
+
+            if (lw > larguraDisponivel) {
+                const last = lineWords.pop();
+
+                const currentX = primeiraLinhaParagrafo ? xStart + recuoPrimeiraLinha : xStart;
+
+                if (lineWords.length > 1) {
+                    const totalTextWidth = lineWidth(lineWords);
+                    const spaceWidth = docInstance.getTextWidth(' ');
+                    const extraSpace = (larguraDisponivel - totalTextWidth) / (lineWords.length - 1);
+
+                    let cursorX = currentX;
+                    for (let j = 0; j < lineWords.length; j++) {
+                        docInstance.text(lineWords[j], cursorX, y);
+                        cursorX += docInstance.getTextWidth(lineWords[j]) + spaceWidth + extraSpace;
+                    }
+                } else {
+                    docInstance.text(lineWords.join(' '), currentX, y);
+                }
+
+                lineWords = [last];
+                y += espacamentoInstitucional;
+                primeiraLinhaParagrafo = false;
+            }
+        }
+
+        if (lineWords.length > 0) {
+            const currentX = primeiraLinhaParagrafo ? xStart + recuoPrimeiraLinha : xStart;
+            docInstance.text(lineWords.join(' '), currentX, y);
+            y += espacamentoInstitucional;
+        }
+
+        return y;
+    }
+
+    function TextoJustificadoSemEspacamentoPrimeiraLinha(docInstance, text, xStart, yStart, maxWidth, lineHeight, fontName = "times", fontStyle = "normal", fontSize = 12) {
+        docInstance.setFont(fontName, fontStyle);
+        docInstance.setFontSize(fontSize);
+        const words = text.replace(/\s+/g, ' ').trim().split(' ');
+        let lineWords = [];
+        let y = yStart;
+
+        function lineWidth(wordsArr) {
+            if (wordsArr.length === 0) return 0;
+            return wordsArr.map(w => docInstance.getTextWidth(w)).reduce((a, b) => a + b, 0) + (wordsArr.length - 1) * docInstance.getTextWidth(' ');
+        }
+
+        for (let i = 0; i < words.length; i++) {
+            lineWords.push(words[i]);
+            let lw = lineWidth(lineWords);
+            if (lw > maxWidth) {
+                const last = lineWords.pop();
+                renderLine(lineWords, xStart, y, maxWidth);
+                lineWords = [last];
+                y += lineHeight;
+            }
+        }
+        if (lineWords.length > 0) {
+            docInstance.text(lineWords.join(' '), xStart, y, { align: 'left', maxWidth: maxWidth });
+            y += lineHeight;
+        }
+        return y;
+    }
+
+    // ---------- CAPA ----------
+    doc.setFont("times", "normal");
+    const capaLinhas = [
+        instituicao.toUpperCase(),
+        centro.toUpperCase(),
+        curso.toUpperCase()
+    ];
+
+    doc.setFontSize(12);
+    let y = margemTopo + EspacamentoEntreLinhasSimples;
+    capaLinhas.forEach(line => {
+        doc.text(line, margemEsquerda + (larguraUtil / 2), y, { align: 'center' });
+        y += EspacamentoEntreLinhas;
+    });
+
+    y += 4 * EspacamentoEntreLinhas;
+    doc.setFontSize(12);
+    doc.setFont("times", "normal");
+    doc.text(nomeAluno.toUpperCase(), margemEsquerda + (larguraUtil / 2), y, { align: 'center' });
+
+    y += 5 * EspacamentoEntreLinhas;
+    doc.setFont("times", "bold");
+    doc.setFontSize(12);
+    doc.text(tituloRelatorio.toUpperCase(), margemEsquerda + (larguraUtil / 2), y, { align: 'center' });
+
+    doc.setFont("times", "normal");
+    doc.setFontSize(12);
+    doc.text(cidadeUF, margemEsquerda + (larguraUtil / 2), alturaPagina - margemInferior - EspacamentoEntreLinhas, { align: 'center' });
+    doc.text(ano, margemEsquerda + (larguraUtil / 2), alturaPagina - margemInferior, { align: 'center' });
+
+    // ---------- FOLHA DE APROVAÇÃO ----------
+    doc.addPage();
+    doc.setPage(doc.internal.getNumberOfPages());
+    let cursorY = margemTopo + EspacamentoEntreLinhasSimples;
+    doc.setFont("times", "bold");
+    doc.setFontSize(12);
+    doc.text(nomeAluno.toUpperCase(), margemEsquerda + (larguraUtil / 2), cursorY, { align: 'center' });
+
+    cursorY += 5 * EspacamentoEntreLinhas;
+    doc.setFont("times", "normal");
+    doc.setFontSize(12);
+    doc.text(tituloRelatorio.toUpperCase(), margemEsquerda + (larguraUtil / 2), cursorY, { align: 'center' });
+
+    cursorY += 3 * EspacamentoEntreLinhas;
+    doc.setFont("times", "normal");
+    doc.setFontSize(12);
+    const yAposParagrafo = TextoJustificadoSemEspacamentoPrimeiraLinha(doc, descricaoAprovacao, margemEsquerda + 60, cursorY, 100, EspacamentoEntreLinhasSimples, "times", "normal", 12);
+
+    let approvalY = yAposParagrafo + 3 * EspacamentoEntreLinhas;
+    doc.setFontSize(12);
+    doc.text("Aprovado em _______ de _______________ de " + ano, margemEsquerda + 60, approvalY, { align: 'left' });
+
+    let assinaturaY = approvalY + 6 * EspacamentoEntreLinhas;
+    const assinaturaX = margemEsquerda;
+    const assinaturaWidth = larguraUtil;
+    doc.setLineWidth(0.3);
+    doc.line(assinaturaX, assinaturaY, assinaturaX + assinaturaWidth, assinaturaY);
+    doc.setFont("times", "bold");
+    doc.setFontSize(12);
+    doc.text(nomeAluno, margemEsquerda + (larguraUtil / 2), assinaturaY + EspacamentoEntreLinhasSimples, { align: 'center' });
+    doc.setFont("times", "normal");
+    doc.setFontSize(12);
+    doc.text("Discente do Curso de Engenharia de Produção", margemEsquerda + (larguraUtil / 2), assinaturaY + 2 * EspacamentoEntreLinhasSimples, { align: 'center' });
+    doc.text("Universidade Estadual do Maranhão", margemEsquerda + (larguraUtil / 2), assinaturaY + 3 * EspacamentoEntreLinhasSimples, { align: 'center' });
+
+    assinaturaY += 6 * EspacamentoEntreLinhas;
+    doc.setLineWidth(0.3);
+    doc.line(assinaturaX, assinaturaY, assinaturaX + assinaturaWidth, assinaturaY);
+    doc.setFont("times", "bold");
+    doc.setFontSize(12);
+    doc.text(orientador, margemEsquerda + (larguraUtil / 2), assinaturaY + EspacamentoEntreLinhasSimples, { align: 'center' });
+    doc.setFont("times", "normal");
+    doc.setFontSize(12);
+    doc.text(cargoOrientador, margemEsquerda + (larguraUtil / 2), assinaturaY + 2 * EspacamentoEntreLinhasSimples, { align: 'center' });
+    doc.text("Universidade Estadual do Maranhão", margemEsquerda + (larguraUtil / 2), assinaturaY + 3 * EspacamentoEntreLinhasSimples, { align: 'center' });
+
+    doc.setFont("times", "normal");
+    doc.setFontSize(12);
+    doc.text(cidadeUF, margemEsquerda + (larguraUtil / 2), alturaPagina - margemInferior - EspacamentoEntreLinhas, { align: 'center' });
+    doc.text(ano, margemEsquerda + (larguraUtil / 2), alturaPagina - margemInferior, { align: 'center' });
+
+    // ---------- SUMÁRIO ----------
+    doc.addPage();
+    const paginaSumario = doc.internal.getNumberOfPages();
+    doc.setPage(doc.internal.getNumberOfPages());
+    cursorY = margemTopo + EspacamentoEntreLinhas;
+
+    doc.setFont("times", "bold");
+    doc.setFontSize(12);
+    doc.text("SUMÁRIO", margemEsquerda + (larguraUtil / 2), cursorY, { align: 'center' });
+
+    let sumarioY = margemTopo + 4 * EspacamentoEntreLinhas;
+    doc.setFont("times", "normal");
+    doc.setFontSize(12);
+
+    // Função para desenhar linha do sumário com numeração dinâmica
+    function desenharLinhaSumario(titulo, numeroPagina, y) {
+        const larguraTotal = larguraUtil;
+        const larguraTitulo = doc.getTextWidth(titulo);
+        const numeroStr = numeroPagina.toString();
+        const larguraNumero = doc.getTextWidth(numeroStr);
+
+        const espacoPontos = larguraTotal - larguraTitulo - larguraNumero - 5;
+        const numPontos = Math.floor(espacoPontos / doc.getTextWidth('.'));
+        const pontos = '.'.repeat(numPontos);
+
+        doc.text(titulo, margemEsquerda, y);
+        doc.text(pontos, margemEsquerda + larguraTitulo + 2, y);
+        doc.text(numeroStr, margemEsquerda + larguraTotal - larguraNumero, y);
+
+        return y + EspacamentoEntreLinhas;
+    }
+
+    // As páginas serão atualizadas depois que o conteúdo for gerado
+    const itensSumario = [
+        { titulo: "1.  INTRODUÇÃO", pagina: 0 },
+        { titulo: "2.  OBJETIVO DO RELATÓRIO", pagina: 0 },
+        { titulo: "3.  METODOLOGIA E APRESENTAÇÃO DAS ATIVIDADES", pagina: 0 },
+        { titulo: "4.  TABELA-RESUMO DAS ATIVIDADES COMPLEMENTARES", pagina: 0 },
+        { titulo: "5.  CONSIDERAÇÕES FINAIS", pagina: 0 },
+        { titulo: "ANEXOS", pagina: 0 }
+    ];
+
+    itensSumario.forEach(item => {
+        sumarioY = desenharLinhaSumario(item.titulo, item.pagina, sumarioY);
+    });
+
+    // ---------- INTRODUÇÃO E OBJETIVOS ----------
+    doc.addPage();
+    const paginaIntroducao = doc.internal.getNumberOfPages();
+    paginasSumario.introducao = paginaIntroducao;
+    paginasSumario.objetivo = paginaIntroducao;
+    paginasSumario.metodologia = paginaIntroducao;
+    doc.setPage(doc.internal.getNumberOfPages());
+    cursorY = margemTopo + EspacamentoEntreLinhas;
+
+    // Introdução
+    doc.setFont("times", "bold");
+    doc.setFontSize(12);
+    doc.text("1.  INTRODUÇÃO", margemEsquerda + (0.63 * 10), cursorY, { align: 'left' });
+    cursorY += EspacamentoEntreLinhas + (4 * pts_em_mm);
+
+    let yApos_ip1 = TextoJustificadoComEspacamentoPrimeiraLinha(doc, introducao_p1, margemEsquerda, cursorY, larguraUtil, EspacamentoEntreLinhas, 12.5);
+    cursorY = yApos_ip1;
+    let yApos_ip2 = TextoJustificadoComEspacamentoPrimeiraLinha(doc, introducao_p2, margemEsquerda, cursorY, larguraUtil, EspacamentoEntreLinhas, 12.5);
+    cursorY = yApos_ip2;
+    let yApos_ip3 = TextoJustificadoComEspacamentoPrimeiraLinha(doc, introducao_p3, margemEsquerda, cursorY, larguraUtil, EspacamentoEntreLinhas, 12.5);
+    cursorY = yApos_ip3 + (18 * pts_em_mm);
+
+    // Objetivo
+    doc.setFont("times", "bold");
+    doc.setFontSize(12);
+    doc.text("2.  OBJETIVO DO RELATÓRIO", margemEsquerda + (0.63 * 10), cursorY, { align: 'left' });
+    cursorY += EspacamentoEntreLinhas + (4 * pts_em_mm);
+
+    let yApos_op1 = TextoJustificadoComEspacamentoPrimeiraLinha(doc, objetivo_p1, margemEsquerda, cursorY, larguraUtil, EspacamentoEntreLinhas, 12.5);
+    cursorY = yApos_op1;
+    let yApos_op2 = TextoJustificadoComEspacamentoPrimeiraLinha(doc, objetivo_p2, margemEsquerda, cursorY, larguraUtil, EspacamentoEntreLinhas, 12.5);
+    cursorY = yApos_op2;
+    let yApos_oitemA = TextoJustificadoComEspacamentoPrimeiraLinha(doc, objetivo_itemA, margemEsquerda, cursorY, larguraUtil, EspacamentoEntreLinhas, 6.4);
+    cursorY = yApos_oitemA;
+    let yApos_oitemB = TextoJustificadoComEspacamentoPrimeiraLinha(doc, objetivo_itemB, margemEsquerda, cursorY, larguraUtil, EspacamentoEntreLinhas, 6.4);
+    cursorY = yApos_oitemB;
+    let yApos_oitemC = TextoJustificadoComEspacamentoPrimeiraLinha(doc, objetivo_itemC, margemEsquerda, cursorY, larguraUtil, EspacamentoEntreLinhas, 6.4);
+    cursorY = yApos_oitemC + (18 * pts_em_mm);
+
+    // Metodologia
+    doc.setFont("times", "bold");
+    doc.setFontSize(12);
+    doc.text("3.  METODOLOGIA E APRESENTAÇÃO DAS ATIVIDADES", margemEsquerda + (0.63 * 10), cursorY + 0.5, { align: 'left' });
+    cursorY += EspacamentoEntreLinhas + (4 * pts_em_mm);
+
+    let yApos_mp1 = TextoJustificadoComEspacamentoPrimeiraLinha(doc, metodologia_p1, margemEsquerda, cursorY, larguraUtil, EspacamentoEntreLinhas, 12.5);
+    cursorY = yApos_mp1;
+    let yApos_mp2 = TextoJustificadoComEspacamentoPrimeiraLinha(doc, metodologia_p2, margemEsquerda, cursorY, larguraUtil, EspacamentoEntreLinhas, 12.5);
+    cursorY = yApos_mp2;
+
+    // ---------- TABELAS DE ATIVIDADES ----------
+    doc.addPage();
+    const paginaTabelas = doc.internal.getNumberOfPages();
+    paginasSumario.tabelaResumo = paginaTabelas;
+    doc.setPage(doc.internal.getNumberOfPages());
+    cursorY = margemTopo + EspacamentoEntreLinhas;
+
+    const totalHorasValidadas = atividadesAprovadas.reduce((sum, a) => sum + a.horasValidadas, 0);
+    const gruposComAtividades = Object.values(atividadesPorGrupo).filter(grupo => grupo.length > 0).length;
+
+    doc.setFont("times", "bold");
+    doc.setFontSize(12);
+    doc.text("4.  TABELA-RESUMO DAS ATIVIDADES COMPLEMENTARES", margemEsquerda + (0.63 * 10), cursorY, { align: 'left' });
+    cursorY += EspacamentoEntreLinhas + (4 * pts_em_mm);
+
+    let startYTable = cursorY;
+
+    // Configurações de margem para autoTable
+    const margin = {
+        top: margemTopo,
+        bottom: margemInferior,
+        left: margemDireita,
+        right: margemDireita
+    };
+
+    // Largura fixa para todas as tabelas: 17cm (170mm)
+    const larguraTabelaFixa = 170;
+
+    // Para cada grupo, criar tabela se tiver atividades
+    for (const grupo of gruposAtividades) {
+        const atividadesDoGrupo = atividadesPorGrupo[grupo];
+
+        if (atividadesDoGrupo.length === 0) continue;
+
+        // Verificar se precisa de nova página antes de adicionar a tabela
+        const alturaDisponivel = alturaPagina - startYTable - margemInferior;
+        const alturaMinimaTabela = 30;
+
+        if (alturaDisponivel < alturaMinimaTabela) {
+            doc.addPage();
+            doc.setPage(doc.internal.getNumberOfPages());
+            startYTable = margemTopo;
+        }
+
+        doc.autoTable({
+            startY: startYTable,
+            margin: margin,
+            tableWidth: larguraTabelaFixa,
+            styles: {
+                font: "times",
+                fontSize: 10,
+                cellPadding: 4,
+                overflow: 'linebreak',
+                valign: 'middle',
+                minCellHeight: 8
+            },
+            head: [
+                [
+                    {
+                        content: grupo,
+                        colSpan: 3,
+                        styles: {
+                            halign: 'center',
+                            fillColor: [11, 109, 184],
+                            textColor: 255,
+                            fontStyle: 'bold',
+                            fontSize: 10,
+                            cellPadding: 6
+                        }
+                    }
+                ],
+                [
+                    {
+                        content: 'Atividade',
+                        styles: {
+                            halign: 'center',
+                            fontStyle: 'normal',
+                            textColor: 0,
+                            cellPadding: 4
+                        }
+                    },
+                    {
+                        content: 'Descrição da Atividade',
+                        styles: {
+                            halign: 'center',
+                            fontStyle: 'normal',
+                            textColor: 0,
+                            cellPadding: 4
+                        }
+                    },
+                    {
+                        content: 'Pontuação',
+                        styles: {
+                            halign: 'center',
+                            fontStyle: 'normal',
+                            textColor: 0,
+                            cellPadding: 4
+                        }
+                    }
+                ]
+            ],
+            body: atividadesDoGrupo.map(atividade => [
+                atividade.tipo,
+                `${atividade.nome} (${atividade.periodo})`,
+                `${atividade.horasValidadas}h`
+            ]),
+            // LARGURAS FIXAS PARA AS CÉLULAS
+            columnStyles: {
+                0: {
+                    cellWidth: 60,  // Largura fixa para a coluna Atividade
+                    fontStyle: 'normal'
+                },
+                1: {
+                    cellWidth: 85,  // Largura fixa para a coluna Descrição
+                    fontStyle: 'normal'
+                },
+                2: {
+                    cellWidth: 25,  // Largura fixa para a coluna Pontuação
+                    halign: 'center',
+                    fontStyle: 'normal'
+                }
+            },
+            headStyles: {
+                fillColor: [230, 230, 230],
+                textColor: 0,
+                fontStyle: 'bold',
+                cellPadding: 4
+            },
+            bodyStyles: {
+                cellPadding: 4,
+                fontStyle: 'normal'
+            },
+            alternateRowStyles: {
+                fillColor: [250, 250, 250]
+            },
+            theme: 'grid'
+        });
+
+        // Atualizar startYTable para a próxima tabela
+        if (doc.autoTable.previous && doc.autoTable.previous.finalY) {
+            startYTable = doc.autoTable.previous.finalY;
+        } else {
+            startYTable += 50;
+        }
+    }
+
+    // ADICIONAR TABELA DE RESUMO COM TOTAL
+    // Verificar se precisa de nova página antes de adicionar a tabela de resumo
+    const alturaDisponivelResumo = alturaPagina - startYTable - margemInferior;
+    const alturaMinimaTabelaResumo = 15;
+
+    if (alturaDisponivelResumo < alturaMinimaTabelaResumo) {
+        doc.addPage();
+        doc.setPage(doc.internal.getNumberOfPages());
+        startYTable = margemTopo;
+    }
+
+    // TABELA DE RESUMO COM FORMATAÇÃO IGUAL AO CABEÇALHO DO GRUPO
+    doc.autoTable({
+        startY: startYTable,
+        margin: margin,
+        tableWidth: larguraTabelaFixa,
+        styles: {
+            font: "times",
+            fontSize: 10,
+            cellPadding: 4,
+            valign: 'middle'
+        },
+        body: [
+            [
+                {
+                    content: 'Total:',
+                    colSpan: 2,
+                    styles: {
+                        halign: 'right',
+                        fontStyle: 'bold',
+                        textColor: 255, // Texto branco
+                        cellPadding: 6,
+                        fillColor: [11, 109, 184] // Mesma cor do cabeçalho do grupo
+                    }
+                },
+                {
+                    content: `${totalHorasValidadas}h`,
+                    styles: {
+                        halign: 'center',
+                        fontStyle: 'bold',
+                        textColor: 255, // Texto branco
+                        cellPadding: 6,
+                        fillColor: [11, 109, 184] // Mesma cor do cabeçalho do grupo
+                    }
+                }
+            ]
+        ],
+        // LARGURAS FIXAS PARA A TABELA DE RESUMO
+        columnStyles: {
+            0: {
+                cellWidth: 145, // Colspan 2 ocupa 60 + 85 = 145mm
+                fontStyle: 'bold'
+            },
+            1: {
+                cellWidth: 0,   // Coluna oculta pelo colspan
+                fontStyle: 'bold'
+            },
+            2: {
+                cellWidth: 25,  // Mesma largura da coluna Pontuação
+                halign: 'center',
+                fontStyle: 'bold'
+            }
+        },
+        bodyStyles: {
+            cellPadding: 4
+        },
+        theme: 'grid'
+    });
+
+    // ---------- CONSIDERAÇÕES FINAIS ----------
+    doc.addPage();
+    const paginaConsideracoes = doc.internal.getNumberOfPages();
+    paginasSumario.consideracoesFinais = paginaConsideracoes;
+    doc.setPage(doc.internal.getNumberOfPages());
+    cursorY = margemTopo + EspacamentoEntreLinhas;
+
+    doc.setFont("times", "bold");
+    doc.setFontSize(12);
+    doc.text("5. CONSIDERAÇÕES FINAIS", margemEsquerda + (0.63 * 10), cursorY, { align: 'left' });
+    cursorY += EspacamentoEntreLinhas + (4 * pts_em_mm);;
+
+    const consideracoes_p1 = `O discente ${nomeAluno} concluiu a carga horária total de ${totalHorasValidadas} horas de Atividades Complementares, distribuídas em ${gruposComAtividades} grupos, conforme exigido. Todas as atividades aqui relatadas possuem documentação comprobatória válida, que é anexada a este processo para a devida análise e parecer do professor responsável, nos termos do Art. 2º do regulamento.`;
+
+    const consideracoes_p2 = "Espera-se, portanto, a apreciação e a homologação das horas pleiteadas para a integralização deste componente curricular obrigatório.";
+
+    let yApos_cp1 = TextoJustificadoComEspacamentoPrimeiraLinha(doc, consideracoes_p1, margemEsquerda, cursorY, larguraUtil, EspacamentoEntreLinhas, 12.5);
+    cursorY = yApos_cp1;
+    let yApos_cp2 = TextoJustificadoComEspacamentoPrimeiraLinha(doc, consideracoes_p2, margemEsquerda, cursorY, larguraUtil, EspacamentoEntreLinhas, 12.5);
+    cursorY = yApos_cp2;
+
+    // ---------- ANEXOS ----------
+    doc.addPage();
+    const paginaAnexos = doc.internal.getNumberOfPages();
+    paginasSumario.anexos = paginaAnexos;
+    doc.setPage(doc.internal.getNumberOfPages());
+
+    doc.setFont("times", "bold");
+    doc.setFontSize(16);
+    doc.text("ANEXOS", margemEsquerda + (larguraUtil / 2), margemTopo - (EspacamentoEntreLinhas) + (alturaUtil / 2), { align: 'center' });
+
+    doc.setFont("times", "normal");
+    doc.setFontSize(12);
+    doc.text("DOCUMENTOS COMPROBATÓRIOS", margemEsquerda + (larguraUtil / 2), margemTopo + (EspacamentoEntreLinhas) + (alturaUtil / 2), { align: 'center' });
+
+    // ---------- ATUALIZAR SUMÁRIO COM NÚMEROS CORRETOS ----------
+    // Voltar para a página do sumário e atualizar os números
+    doc.setPage(paginaSumario);
+
+    // Limpar o sumário existente
+    doc.setFillColor(255, 255, 255);
+    doc.rect(margemEsquerda, margemTopo + 3 * EspacamentoEntreLinhasSimples,
+        larguraUtil, 150, 'F');
+
+    sumarioY = margemTopo + 4 * EspacamentoEntreLinhasSimples;
+
+    // Redesenhar o sumário com os números corretos (numeração textual)
+    const itensSumarioAtualizado = [
+        { titulo: "1.  INTRODUÇÃO", pagina: paginaIntroducao - 1 }, // Introdução é a página paginaIntroducao - 1 (não conta a capa)
+        { titulo: "2.  OBJETIVO DO RELATÓRIO", pagina: paginaIntroducao - 1 }, // Mesma página da introdução
+        { titulo: "3.  METODOLOGIA E APRESENTAÇÃO DAS ATIVIDADES", pagina: paginaIntroducao - 1 }, // Mesma página
+        { titulo: "4.  TABELA-RESUMO DAS ATIVIDADES COMPLEMENTARES", pagina: paginasSumario.tabelaResumo - 1 },
+        { titulo: "5.  CONSIDERAÇÕES FINAIS", pagina: paginasSumario.consideracoesFinais - 1 },
+        { titulo: "ANEXOS", pagina: paginasSumario.anexos - 1 }
+    ];
+
+    itensSumarioAtualizado.forEach(item => {
+        sumarioY = desenharLinhaSumario(item.titulo, item.pagina, sumarioY);
+    });
+
+    // ---------- ADICIONAR NUMERAÇÃO APENAS NA PARTE TEXTUAL ----------
+    const totalPagesRelatorio = doc.internal.getNumberOfPages();
+    let numeroPaginaTextual = paginaIntroducao - 1; // Começa da introdução
+
+    for (let i = 1; i <= totalPagesRelatorio; i++) {
+        doc.setPage(i);
+
+        // Só adiciona numeração a partir da página da introdução
+        if (i >= paginaIntroducao) {
+            adicionarNumeroPagina(doc, numeroPaginaTextual);
+            numeroPaginaTextual++;
+        }
+    }
+
+    // Retornar o relatório textual (sem comprovantes) como ArrayBuffer
+    return doc.output('arraybuffer');
 }
 
 /**
@@ -3839,6 +5291,50 @@ async function obterMatriculaAluno() {
         } else {
             resolve(currentUserData.matricula || "N/A");
         }
+    });
+}
+
+/**
+ * Obtém o coordenador do estudante logado
+ * @returns {Promise} Promise com o nome do coordenador
+ */
+async function obterCoordenadorDoAluno() {
+    return new Promise((resolve, reject) => {
+        if (currentUserType !== "student") {
+            resolve("Coordenador do Curso");
+            return;
+        }
+
+        const transaction = db.transaction(["estudantes", "coordenadores"], "readonly");
+        const estudantesStore = transaction.objectStore("estudantes");
+        const coordenadoresStore = transaction.objectStore("coordenadores");
+
+        // Buscar o estudante atual
+        const requestEstudante = estudantesStore.get(currentUser);
+
+        requestEstudante.onsuccess = function () {
+            const estudante = requestEstudante.result;
+            if (!estudante || !estudante.coordenador) {
+                resolve("Coordenador do Curso");
+                return;
+            }
+
+            // Buscar o coordenador do estudante
+            const requestCoordenador = coordenadoresStore.get(estudante.coordenador);
+
+            requestCoordenador.onsuccess = function () {
+                const coordenador = requestCoordenador.result;
+                if (coordenador && coordenador.nome) {
+                    resolve("Prof. " + coordenador.nome);
+                } else {
+                    resolve("Coordenador do Curso");
+                }
+            };
+
+            requestCoordenador.onerror = () => resolve("Coordenador do Curso");
+        };
+
+        requestEstudante.onerror = () => resolve("Coordenador do Curso");
     });
 }
 
@@ -3895,33 +5391,35 @@ function carregarEdicao(id) {
         const atividade = e.target.result;
 
         if (atividade) {
-            const idEdicao = getElementSafe("idEdicao");
-            const nomeEdicao = getElementSafe("nomeEdicao");
-            const tipoEdicao = getElementSafe("tipoEdicao");
-            const horasEdicao = getElementSafe("horasEdicao");
-            const periodoEdicao = getElementSafe("periodoEdicao");
+            document.getElementById("idEdicao").value = atividade.id;
+            document.getElementById("nomeEdicao").value = atividade.nome;
+            document.getElementById("tipoEdicao").value = atividade.tipo;
 
-            if (idEdicao) idEdicao.value = atividade.id;
-            if (nomeEdicao) nomeEdicao.value = atividade.nome;
-            if (tipoEdicao) tipoEdicao.value = atividade.tipo;
-            if (horasEdicao) horasEdicao.value = atividade.horasRegistradas;
-            if (periodoEdicao) periodoEdicao.value = atividade.periodo;
+            // Atualiza o select para exibir o tipo da atividade carregada
+            const wrapper = document.getElementById("tipoEdicao").previousElementSibling;
+            if (wrapper && wrapper.classList.contains('searchable-select-wrapper')) {
+                const selectText = wrapper.querySelector('.select-text-edicao');
+                if (selectText) {
+                    selectText.textContent = atividade.tipo;
+                }
+            }
+
+            document.getElementById("horasEdicao").value = atividade.horasRegistradas;
+            document.getElementById("periodoEdicao").value = atividade.periodo;
 
             // Mostrar info do comprovante atual
-            const comprovanteInfo = getElementSafe("comprovanteAtualInfo");
-            if (comprovanteInfo) {
-                if (atividade.comprovante) {
-                    const size = atividade.comprovante.byteLength;
-                    comprovanteInfo.innerHTML = `
-                        Comprovante atual: 
-                        <a href="#" onclick="baixarComprovante(${atividade.id}); return false;">
-                            comprovante_${atividade.id}.pdf
-                        </a> 
-                        (${formatFileSize(size)})
-                    `;
-                } else {
-                    comprovanteInfo.textContent = "Nenhum comprovante cadastrado";
-                }
+            const comprovanteInfo = document.getElementById("comprovanteAtualInfo");
+            if (atividade.comprovante) {
+                const size = atividade.comprovante.byteLength;
+                comprovanteInfo.innerHTML = `
+                    Comprovante atual: 
+                    <a href="#" onclick="baixarComprovante(${atividade.id}); return false;">
+                        comprovante_${atividade.id}.pdf
+                    </a> 
+                    (${formatarTamanhoDoArquivo(size)})
+                `;
+            } else {
+                comprovanteInfo.textContent = "Nenhum comprovante cadastrado";
             }
         }
     };
@@ -4091,12 +5589,14 @@ async function recalcularHorasGrupo(grupo) {
                     disponivelEspecifico = configTipo.maxHorasValidadas;
                 }
 
-                const novasHorasValidadas = Math.min(
-                    atividade.horasRegistradas,
-                    disponivelGrupo,
-                    disponivelGlobalTipo,
-                    disponivelEspecifico
-                );
+                let novasHorasValidadas = 0;
+                if (atividade.horasRegistradas > 0) {
+                    novasHorasValidadas = Math.min(
+                        disponivelGrupo,
+                        disponivelGlobalTipo,
+                        disponivelEspecifico
+                    )
+                };
 
                 acumuladoGrupo += novasHorasValidadas;
                 if (configTipo.restricao === 'periodo') {
@@ -4241,7 +5741,7 @@ async function atualizarEstudanteNaTurma(usuarioEstudante) {
             }
         });
 
-        const progresso = Math.min(100, (horasValidadas / HORAS_NECESSARIAS) * 100);
+        const progresso = Math.min(100, (horasValidadas / horasNecessariasCurso) * 100);
 
         // Procurar a linha do estudante na tabela
         const linhas = tabela.getElementsByTagName("tr");
@@ -4332,13 +5832,13 @@ async function atualizarTurma() {
             });
 
             // Limita horas por aluno ao máximo necessário
-            const horasValidadasLimitadas = Math.min(horasValidadas, HORAS_NECESSARIAS);
+            const horasValidadasLimitadas = Math.min(horasValidadas, horasNecessariasCurso);
 
             // Acumular totais para o KPI
             totalHorasValidadasTurma += horasValidadasLimitadas;
             if (horasValidadasLimitadas > 0) totalEstudantesComHoras++;
 
-            const progresso = Math.min(100, (horasValidadas / HORAS_NECESSARIAS) * 100);
+            const progresso = Math.min(100, (horasValidadas / horasNecessariasCurso) * 100);
 
             const row = document.createElement("tr");
             row.innerHTML = `
@@ -4385,12 +5885,12 @@ function voltarParaTurma() {
  * Mostra informações sobre o sistema
  */
 function mostrarSobre() {
-    alert(`SIGACC - Sistema Integrado de Gestão de Atividades Complementares Curriculares - Versão 1.0\n\nDesenvolvido por Diego Bezerra Reinaldo para auxiliar os estudantes do curso ${CURSO_DE_GRADUACAO}, no gerenciamento de atividades complementares.\n\nPara esclarecimentos de dúvidas ou recuperação de login e senhas, entrar em contato com os através dos contatos:\n\nEmail: diego.dbr811@gmail.com\nInstagram: @eaidih\nCentro de Ciências Tecnológicas - CCT/UEMA, Cidade Universitária Paulo VI.`);
+    alert(`SIGACC - Sistema Integrado de Gestão de Atividades Complementares Curriculares - Versão 2.0\n\nDesenvolvido por Diego Bezerra Reinaldo para auxiliar os estudantes do curso ${cursoDeGraducao}, no gerenciamento de atividades complementares.\n\nPara esclarecimentos de dúvidas ou recuperação de login e senhas, entrar em contato com os através dos contatos:\n\nEmail: diego.dbr811@gmail.com\nInstagram: @eaidih\nCentro de Ciências Tecnológicas - CCT/UEMA, Cidade Universitária Paulo VI.`);
 }
 
-// =============================================
-// FECHAR MODAIS AO CLICAR FORA DELES
-// =============================================
+/**
+ *  FECHAR MODAIS AO CLICAR FORA DELES
+*/
 window.addEventListener('click', function (event) {
     document.querySelectorAll('.modal').forEach(modal => {
         if (event.target === modal) {

@@ -11,6 +11,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/downloadjs/1.4.8/download.min.js"></script>
     <script src="scripts.js" defer></script>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -452,7 +454,7 @@
                                 </colgroup>
                                 <thead>
                                     <tr>
-                                        <th>Nome<div class="resizer" data-col="0"></div>
+                                        <th>Descrição da Atividade<div class="resizer" data-col="0"></div>
                                         </th>
                                         <th>Tipo<div class="resizer" data-col="1"></div>
                                         </th>
@@ -549,23 +551,26 @@
                         <form id="formCadastro">
                             <div class="form-grid">
                                 <div class="form-group-main">
-                                    <label for="nome">Nome da Atividade</label>
+                                    <label for="nome">Descrição da Atividade</label>
                                     <input type="text" id="nome" placeholder="Ex: Participação em congresso" required>
                                 </div>
 
                                 <div class="form-group-main">
                                     <label for="tipo">Tipo de Atividade</label>
                                     <select id="tipo" required>
-                                        <option value="">Selecione um tipo</option>
+                                        <!-- As opções serão preenchidas por JavaScript -->
                                     </select>
                                 </div>
 
                                 <div class="form-group-main">
                                     <label for="horas">Horas Registradas</label>
-                                    <input type="number" id="horas" placeholder="Ex: 100" min="0" step="0.1" required>
-                                    <i class="fas fa-info-circle info-icon"></i>
-                                    <div class="info-tooltip">
-                                        Quantidade total de horas que você dedicou a esta atividade
+                                    <div class="input-container">
+                                        <input type="number" id="horas" placeholder="Ex: 100" min="0" step="0.1"
+                                            required>
+                                        <i class="fas fa-info-circle info-icon"></i>
+                                        <div class="info-tooltip">
+                                            Quantidade total de horas que você dedicou a esta atividade
+                                        </div>
                                     </div>
                                 </div>
 
@@ -606,14 +611,14 @@
                                 <div class="form-group-main">
                                     <label for="filtroGrupo">Grupo de Atividade</label>
                                     <select id="filtroGrupo">
-                                        <option value="Todos">Todos os grupos</option>
+                                        <!-- As opções serão preenchidas por JavaScript -->
                                     </select>
                                 </div>
 
                                 <div class="form-group-main">
                                     <label for="filtroTipo">Tipo de Atividade</label>
                                     <select id="filtroTipo">
-                                        <option value="Todos">Todos os tipos</option>
+                                        <!-- As opções serão preenchidas por JavaScript -->
                                     </select>
                                 </div>
 
@@ -631,8 +636,27 @@
                                     <i class="fas fa-redo"></i> Limpar Filtros
                                 </button>
                                 <button type="button" class="form-btn primary" id="imprimirBtn">
-                                    <i class="fas fa-print"></i> Imprimir
+                                    <i class="fas fa-print"></i> Gerar Relatório
                                 </button>
+                            </div>
+
+                            <!-- Modal de Preview do Relatório -->
+                            <div id="previewRelatorioOverlay" class="modal-overlay" style="display: none;">
+                                <div class="modal-content-preview">
+                                    <div class="modal-header">
+                                        <h2>Visualização do Relatório</h2>
+                                        <span class="btn-close" onclick="fecharPreviewRelatorio()">×</span>
+                                    </div>
+                                    <div class="modal-body">
+                                        <iframe id="previewRelatorioIframe" width="100%" height="800px"></iframe>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button class="form-btn secondary"
+                                            onclick="fecharPreviewRelatorio()">Fechar</button>
+                                        <button class="form-btn primary" onclick="baixarPdfAtual()">Baixar
+                                            Relatório</button>
+                                    </div>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -651,7 +675,7 @@
                             </colgroup>
                             <thead>
                                 <tr>
-                                    <th>Nome<div class="resizer" data-col="0"></div>
+                                    <th>Descrição da Atividade<div class="resizer" data-col="0"></div>
                                     </th>
                                     <th>Tipo<div class="resizer" data-col="1"></div>
                                     </th>
@@ -699,7 +723,7 @@
                             <input type="hidden" id="idEdicao">
                             <div class="form-grid">
                                 <div class="form-group-main">
-                                    <label for="nomeEdicao">Nome da Atividade</label>
+                                    <label for="nomeEdicao">Descrição da Atividade</label>
                                     <input type="text" id="nomeEdicao" required>
                                 </div>
 
@@ -727,7 +751,7 @@
                             </div>
 
                             <div class="form-actions">
-                                <button type="submit" class="form-btn primary">
+                                <button type="submit" class="form-btn primary" id="submitEdicaoBtn">
                                     <i class="fas fa-save"></i> Salvar Alterações
                                 </button>
                                 <button type="button" class="form-btn secondary" id="cancelarEdicaoBtn">
@@ -946,4 +970,5 @@
         });
     </script>
 </body>
+
 </html>
