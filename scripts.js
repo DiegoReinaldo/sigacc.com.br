@@ -2959,7 +2959,7 @@ async function handleCadastroSubmit(e) {
     try {
         let comprovanteArrayBuffer = null;
         if (comprovanteFile) {
-            comprovanteArrayBuffer = await fileToArrayBuffer(comprovanteFile);
+            comprovanteArrayBuffer = await arquivoParaArrayBuffer(comprovanteFile);
         }
 
         // SEMPRE definir status como Pendente para estudantes
