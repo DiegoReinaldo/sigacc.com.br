@@ -2956,7 +2956,41 @@ async function handleCadastroSubmit(e) {
         return;
     }
 
-    // ... restante do código existente ...
+    try {
+        let comprovanteArrayBuffer = null;
+        if (comprovanteFile) {
+            comprovanteArrayBuffer = await fileToArrayBuffer(comprovanteFile);
+        }
+
+        // SEMPRE definir status como Pendente para estudantes
+        const status = 'Pendente';
+        const horasValidadasEfetivas = 0; // Até que seja aprovado pelo coordenador
+
+        const novaAtividade = {
+            usuario: currentUser,
+            nome,
+            tipo,
+            horasRegistradas: horas,
+            horasValidadas: horasValidadasEfetivas,
+            periodo,
+            status: status,
+            comprovante: comprovanteArrayBuffer
+        };
+
+        const transaction = db.transaction("atividades", "readwrite");
+        const store = transaction.objectStore("atividades");
+        const request = store.add(novaAtividade);
+
+        request.onsuccess = function () {
+            showSystemMessage("Atividade cadastrada com sucesso! Aguarde avaliação do coordenador.", "success");
+            const form = getElementSafe("formCadastro");
+            if (form) form.reset();
+            atualizarTabela();
+            atualizarResumo();
+        };
+    } catch (error) {
+        showSystemMessage("Erro ao cadastrar atividade: " + error, "error");
+    }
 }
 
 /**
